@@ -743,7 +743,7 @@ else:
                 ":material/rule: Regelerkennung",
                 ":material/confirmation_number: Tickets",
                 ":material/analytics: Metriken",
-            ])
+            ], key="admin_tabs_persistent")
         else:
             tab_chat, tab_ticket = st.tabs([
                 ":material/forum: Wissensabfrage", 
@@ -1198,22 +1198,22 @@ else:
                                 st.markdown(badge_html, unsafe_allow_html=True)
 
                             with col_t2:
-
                                 box_key = f"status_select_{tk['id']}"
-    
-  
-                                if box_key not in st.session_state:
-                                    st.session_state[box_key] = tk['status']
-
-    
-                                st.selectbox(
+                                status_optionen = ["Offen", "In Bearbeitung", "Geschlossen"]
+                                
+                                # Reines Widget ohne on_change-Callback (verhindert den React-Crash)
+                                auswahl = st.selectbox(
                                     "Vorgangsstatus",
-                                    options=["Offen", "In Bearbeitung", "Geschlossen"],
+                                    options=status_optionen,
+                                    index=status_optionen.index(tk['status']),
                                     key=box_key,
-                                    label_visibility="collapsed",
-                                    on_change=update_ticket_status,
-                                    args=(tk['id'], box_key)
+                                    label_visibility="collapsed"
                                 )
+                                
+                                # Direkte Überprüfung: Wenn sich der Wert ändert, direkt updaten und neuladen
+                                if auswahl != tk['status']:
+                                    tk['status'] = auswahl
+                                    st.rerun()
    
     
 
