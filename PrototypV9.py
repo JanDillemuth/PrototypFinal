@@ -431,7 +431,7 @@ BEISPIELFRAGEN = {
             "<span class='onto-ref'>1<span class='tooltiptext'><strong>📌 Abrechnungsregel Pflegegrad 1</strong><br>Ontologie erzwang Verweis auf § 45b SGB XI. Sachleistungen wurden logisch ausgeschlossen.</span></span> "
             "Eine Anerkennung als Pflegeleistung im Sinne der Sachleistungsvergabe (§ 36 SGB XI) ist "
             "bei Pflegegrad 1 nicht möglich. Die Abrechnung erfolgt ausschließlich "
-            "über den Entlastungsbetrag direkt mit der Pflegekasse. Interne "
+            "über den Entlastungsbetrag direkt mit die Pflegekasse. Interne "
             "Abrechnungsfrist: bis zum 5. des Folgemonats. "
             "<span class='onto-ref'>2<span class='tooltiptext'><strong>📑 Vereinsinterne Richtlinie #08</strong><br>Standard-Fristen für die Finanzbuchhaltung aus dem Qualitätsmanagement-Handbuch geladen.</span></span>"
         ),
@@ -537,7 +537,6 @@ if not st.session_state.eingeloggt:
     col1, col2, col3 = st.columns([1, 1.2, 1])
     
     with col2:
-        # Prüfung, ob das Logo geladen werden konnte
         if LOGO_BASE64:
             st.markdown(
                 f'<div class="login-container">'
@@ -547,7 +546,6 @@ if not st.session_state.eingeloggt:
                 unsafe_allow_html=True
             )
         else:
-            # Fallback auf Icon, wenn Bild fehlt
             st.markdown(
                 '<div class="login-container">'
                 '<span class="icon login-icon">shield_person</span>'
@@ -607,7 +605,6 @@ if not st.session_state.eingeloggt:
 # ABSCHNITT 5: SEITENLEISTE (Nach erfolgreichem Login)
 # =============================================================================
 with st.sidebar:
-    # Sidebar Logo oder Text Fallback
     if LOGO_BASE64:
         st.markdown(
             f'<div style="text-align: center; margin-bottom: 1.5rem; margin-top: 1rem;">'
@@ -621,7 +618,6 @@ with st.sidebar:
         
     st.divider()
 
-    # Klickbarer Profil-Button
     if st.button(f"{st.session_state.benutzername} ({st.session_state.rolle})", icon=":material/account_circle:", use_container_width=True):
         st.session_state.aktuelle_seite = "profil"
         st.rerun()
@@ -639,7 +635,6 @@ with st.sidebar:
     
     st.divider()
 
-    # Schnittstellen-Modus nur anzeigen, wenn man sich auf der Hauptseite befindet
     if st.session_state.aktuelle_seite == "main":
         st.markdown("**Schnittstellen-Modus**")
         modi = ["Web UI Chat Interface", "Dokumenten-Integration (Office Plugin)"]
@@ -722,15 +717,12 @@ if st.session_state.aktuelle_seite == "profil":
 # HAUPTSEITE: WMS ANWENDUNG
 # -----------------------------------------------------------------------
 else:
-    # -----------------------------------------------------------------------
-    # MODUS A: WEB UI CHAT INTERFACE
-    # -----------------------------------------------------------------------
     if st.session_state.modus == "Web UI Chat Interface":
 
         ist_admin = st.session_state.rolle == "Administrator"
 
         if ist_admin:
-            # Fester Key hinzugefügt, um Tab-Fokus beim Neuladen dauerhaft beizubehalten
+            # Fester Key garantiert reitertreues Neuladen
             tab_chat, tab_ticket, tab_onto, tab_regeln, tab_ticket_admin, tab_metriken = st.tabs([
                 ":material/forum: Wissensabfrage",
                 ":material/support_agent: Support",
@@ -771,7 +763,6 @@ else:
 
             st.markdown("---")
 
-            # CHAT-VERLAUF ANZEIGEN
             if not st.session_state.chat_verlauf:
                 st.info("Noch keine Anfragen im aktuellen Verlauf vorhanden. Wählen Sie eine der oberen Beispielfragen oder tippen Sie einen Freitext ein.")
             else:
@@ -800,7 +791,6 @@ else:
                     </div>
                     """, unsafe_allow_html=True)
 
-                    # Feedback-Logik
                     akt_fb = st.session_state.feedback.get(fb_key)
 
                     if akt_fb is None:
@@ -838,7 +828,6 @@ else:
 
                     st.markdown("<hr>", unsafe_allow_html=True)
 
-            # EINGABEBEREICH (KOMPAKTER BUTTON)
             with st.form(key="freitext_form", clear_on_submit=True):
                 freitext = st.text_area(
                     "Ihre Frage",
@@ -847,7 +836,6 @@ else:
                     label_visibility="collapsed",
                 )
                 
-                # Layout für kompakten Button links, Modus in der Mitte, Rest leer
                 col_btn, col_modus, col_space = st.columns([1.5, 2.5, 6])
                 with col_btn:
                     absenden = st.form_submit_button("Senden", icon=":material/send:")
@@ -913,13 +901,9 @@ else:
                 with col_tbtn:
                     ticket_absenden = st.form_submit_button("Support-Ticket sicher übertragen", icon=":material/send_and_archive:")
 
-            # Wenn der Button geklickt wurde...
             if ticket_absenden:
-                # ...prüfen wir zuerst, ob eines der Felder leer ist
                 if not ticket_titel.strip() or not ticket_beschr.strip():
                     st.error("Bitte füllen Sie sowohl den Titel als auch die Beschreibung aus, bevor Sie das Ticket absenden.", icon=":material/warning:")
-                
-                # ...wenn beide Felder Text enthalten, wird gespeichert
                 else:
                     neues_ticket = {
                         "id": st.session_state.ticket_counter,
@@ -1025,21 +1009,17 @@ else:
 
                 st.markdown("<br>", unsafe_allow_html=True)
                 
-                # --- NEUER BEREICH: AKZEPTIERTE REGELN ---
                 st.markdown('<div class="komm-card">', unsafe_allow_html=True)
                 st.markdown('<div class="onto-titel"><span class="icon">playlist_add_check</span> Produktiv geschaltete Reasoner-Regeln</div>', unsafe_allow_html=True)
                 st.markdown("Hier sehen Sie alle Axiome, die aus dem Vorschlagswesen administrativ in den aktiven Betrieb übernommen wurden.")
                 
-                # Alle Regeln zusammenführen
                 alle_regeln_gesamt = REGEL_KANDIDATEN + st.session_state.manuelle_regeln
-                # Nur die herausfiltern, die das grüne Licht haben
                 akzeptierte = [r for r in alle_regeln_gesamt if st.session_state.regel_status.get(r["id"]) == "akzeptiert"]
                 
                 if not akzeptierte:
                     st.info("Aktuell wurden noch keine neuen Regeln in den produktiven Reasoner übernommen.")
                 else:
                     st.markdown("<br>", unsafe_allow_html=True)
-                    # Tabellen-Kopfzeile
                     col_rtitel, col_rdatum = st.columns([3, 1])
                     with col_rtitel:
                         st.markdown("**Regeltitel / Axiom-Logik**")
@@ -1048,7 +1028,6 @@ else:
                         
                     st.markdown("<hr style='margin: 0.5rem 0;'>", unsafe_allow_html=True)
                     
-                    # Wir drehen die Liste um (reversed), damit die zuletzt hinzugefügte Regel GANZ OBEN steht
                     for regel in reversed(akzeptierte):
                         col_rtitel, col_rdatum = st.columns([3, 1])
                         with col_rtitel:
@@ -1060,7 +1039,6 @@ else:
                         st.markdown("<hr style='margin: 0.5rem 0;'>", unsafe_allow_html=True)
                 st.markdown('</div>', unsafe_allow_html=True)
 
-                # --- HIER GEHEN DIE METRIKEN WIEDER WEITER ---
                 st.markdown("---")
                 col_m1, col_m2, col_m3 = st.columns(3)
                 with col_m1:
@@ -1080,11 +1058,9 @@ else:
                     "</p>", unsafe_allow_html=True
                 )
 
-                # 1. Session-State für manuell erstellte Regeln initialisieren
                 if "manuelle_regeln" not in st.session_state:
                     st.session_state.manuelle_regeln = []
 
-                # 2. Das neue Eingabe-Formular für Ontologie-Regeln
                 st.markdown('<div class="komm-card">', unsafe_allow_html=True)
                 st.markdown('<div class="onto-titel"><span class="icon">schema</span> Neue Ontologie-Regel erstellen</div>', unsafe_allow_html=True)
                 st.markdown("Definieren Sie hier manuell neue semantische Zusammenhänge (Wenn-Dann-Abfolgen).")
@@ -1103,9 +1079,7 @@ else:
                     submit_axiom = st.form_submit_button("Regel generieren", icon=":material/add_task:")
                     
                     if submit_axiom:
-                        # Validierung, ob alle Felder gefüllt sind
                         if regel_titel.strip() and entitaet.strip() and beziehung.strip() and objekt.strip():
-                            # Generiere eine neue ID ab 100, um Überschneidungen mit den Mock-Daten zu vermeiden
                             neue_id = 100 + len(st.session_state.manuelle_regeln)
                             neue_regel = {
                                 "id": neue_id,
@@ -1113,23 +1087,19 @@ else:
                                 "beschreibung": f"Wenn {entitaet.strip()} {beziehung.strip()}, dann {objekt.strip()}.",
                                 "haeufigkeit": "Manuell erstellt"
                             }
-                            # In den State pushen
                             st.session_state.manuelle_regeln.append(neue_regel)
-                            # Den Status-Tracker für diese neue ID initialisieren (auf "Ungeprüft" setzen)
                             st.session_state.regel_status[neue_id] = None 
                             
                             st.success("Neue Regel erfolgreich zur Liste hinzugefügt.")
-                            st.rerun() # Oberfläche sofort aktualisieren
+                            st.rerun()
                         else:
                             st.error("Bitte füllen Sie alle vier Felder aus, um die Regel zu generieren.", icon=":material/warning:")
                 st.markdown('</div>', unsafe_allow_html=True)
                 
                 st.markdown("---")
 
-                # 3. Liste aller Regeln zusammenführen (Statistisch vorgeschlagene + Manuelle)
                 alle_regeln = REGEL_KANDIDATEN + st.session_state.manuelle_regeln
 
-                # 4. Rendern der Karten für die Prüfliste
                 for regel in alle_regeln:
                     rid = regel["id"]
                     status = st.session_state.regel_status[rid]
@@ -1141,7 +1111,6 @@ else:
                         st.markdown(f"**{regel['titel']}**")
                         st.markdown(regel["beschreibung"])
                         
-                        # Kleine Unterscheidung im Text: KI-Vorschlag vs. Manueller Admin-Eintrag
                         if "Manuell" in str(regel['haeufigkeit']):
                             st.caption("Evidenz: Manuell durch Administrator erstellt")
                         else:
@@ -1159,7 +1128,7 @@ else:
                                 st.rerun()
                             st.markdown("<br>", unsafe_allow_html=True)
                             if st.button("Axiom verwerfen", key=f"abl_{rid}", icon=":material/close:", use_container_width=True):
-                                st.session_state.regel_status[rid] = "abgelehnt"  # Rechtschreibfehler behoben
+                                st.session_state.regel_status[rid] = "abgelehnt"
                                 st.rerun()
                         else:
                             st.markdown("**Status: Geprüft**")
@@ -1197,14 +1166,14 @@ else:
                             st.markdown(badge_html, unsafe_allow_html=True)
 
                         with col_t2:
-                            # CRASH-SCHUTZ: Jedes Ticket-Formular und Widget besitzt nun eine absolut eindeutige ID (key=...)
+                            # FORM-BASIERTES SPEICHERN: Widget hat keinen eigenen 'key' mehr, der Werte vorab ungewollt cached.
+                            # Der eindeutige unsichtbare Label-Text schützt vor dem "Duplicate Widget ID"-Crash!
                             with st.form(key=f"status_form_{tk['id']}", clear_on_submit=False):
                                 status_optionen = ["Offen", "In Bearbeitung", "Geschlossen"]
                                 auswahl = st.selectbox(
-                                    "Vorgangsstatus",
+                                    f"Vorgangsstatus für Ticket {tk['id']}",
                                     options=status_optionen,
                                     index=status_optionen.index(tk['status']),
-                                    key=f"select_widget_{tk['id']}",  # <-- Verhindert den Absturz beim Klicken!
                                     label_visibility="collapsed"
                                 )
                                 if st.form_submit_button("Speichern", use_container_width=True):
