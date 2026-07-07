@@ -279,19 +279,19 @@ st.markdown("""
        Ersetzt die alte .moderne-karte Klasse. Sorgt für den dezenten, 
        grünen Rand, den weichen Schatten und den Hover-Effekt!
        ------------------------------------------------------------- */
-    [data-testid="stVerticalBlockBorderWrapper"] {
-        border: 1px solid rgba(18, 115, 74, 0.15) !important; /* Dezentes KOMM-Grün */
+    div[data-testid="stMain"] div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"] {
+        border: 1px solid rgba(18, 115, 74, 0.15) !important;
         border-radius: var(--radius-klein) !important;
         background-color: #ffffff !important;
         box-shadow: var(--schatten-weich) !important;
         transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-        padding: 1.2rem !important;
-        margin-bottom: 0.6rem !important;
+        padding: 1.2rem;       /* !important entfernt, damit Tabs unsichtbar werden können */
+        margin-bottom: 0.6rem;  /* !important entfernt */
     }
-    [data-testid="stVerticalBlockBorderWrapper"]:hover {
+    div[data-testid="stMain"] div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"]:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 24px rgba(18, 115, 74, 0.12) !important;
-        border-color: rgba(18, 115, 74, 0.3) !important; /* Rand wird beim Hovern etwas stärker */
+        border-color: rgba(18, 115, 74, 0.3) !important;
     }
 
     .onto-titel {
@@ -1198,24 +1198,22 @@ else:
                                 st.markdown(badge_html, unsafe_allow_html=True)
 
                             with col_t2:
-                                # Dynamischer Key für die Selectbox
+
                                 box_key = f"status_select_{tk['id']}"
-                                status_optionen = ["Offen", "In Bearbeitung", "Geschlossen"]
     
-    # 1. Wir fangen die Auswahl direkt in einer Variablen ab (OHNE on_change)
-                                auswahl = st.selectbox(
+  
+                                if box_key not in st.session_state:
+                                    st.session_state[box_key] = tk['status']
+
+    
+                                st.selectbox(
                                     "Vorgangsstatus",
-                                    options=status_optionen,
-                                    index=status_optionen.index(tk['status']),
+                                    options=["Offen", "In Bearbeitung", "Geschlossen"],
                                     key=box_key,
-                                    label_visibility="collapsed"
+                                    label_visibility="collapsed",
+                                    on_change=update_ticket_status,
+                                    args=(tk['id'], box_key)
                                 )
-    
-    # 2. Wenn sich die Auswahl vom aktuellen Ticket-Status unterscheidet:
-    #    Direkt updaten und einen sauberen, top-down Rerun erzwingen!
-                                if auswahl != tk['status']:
-                                    tk['status'] = auswahl
-                                    st.rerun()
    
     
 
