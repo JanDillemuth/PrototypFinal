@@ -1110,7 +1110,7 @@ else:
                             if "Manuell" in str(regel['haeufigkeit']):
                                 st.caption("Evidenz: Manuell durch Administrator erstellt")
                             else:
-                                t.caption(f"Statistische Evidenz: Abgeleitet aus {regel['haeufigkeit']} Interaktionen")
+                                st.caption(f"Statistische Evidenz: Abgeleitet aus {regel['haeufigkeit']} Interaktionen")
 
                             if status == "akzeptiert":
                                 st.markdown('<span class="badge badge-ok"><span class="icon" style="font-size:14px;">check</span> Freigegeben</span>', unsafe_allow_html=True)
