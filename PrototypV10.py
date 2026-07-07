@@ -101,19 +101,21 @@ st.markdown("""
     .stFormSubmitButton > button:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(18, 115, 74, 0.25) !important;
+        color: #ffffff !important;
     }
     
-    /* Sekundäre Buttons (z.B. Logout, Zurück, inaktive Stati) */
-    .btn-sekundaer > button, .stButton > button[data-testid="stBaseButton-secondary"] {
+    /* Sekundäre Buttons (inaktive Auswahl-Stati) */
+    .stButton > button[data-testid="stBaseButton-secondary"] {
         background: #ffffff !important;
         color: var(--text-dunkel) !important;
         border: 1px solid #e0e0e0 !important;
         box-shadow: none !important;
     }
-    .btn-sekundaer > button:hover, .stButton > button[data-testid="stBaseButton-secondary"]:hover {
+    .stButton > button[data-testid="stBaseButton-secondary"]:hover {
         background: #f8f9fa !important;
         border-color: #d0d0d0 !important;
         box-shadow: var(--schatten-weich) !important;
+        color: var(--text-dunkel) !important;
     }
 
     /* Header-Leiste */
@@ -514,7 +516,7 @@ def init_session():
         "manuelle_regeln": [],
         "regel_status": {r["id"]: None for r in REGEL_KANDIDATEN},
         "tickets": [
-            {"id": 1, "titel": "Fehler bei SGB XII Abfrage", "beschreibung": "Das System gibt manchmal noch die veralteten Pauschalen aus.", "status": "Offen", "ersteller": "Mitarbeiter A"},
+            {"id": 1, "titel": "Fehler bei SGB XII Abfrage", "beschreibung": "Das System gives manchmal noch die veralteten Pauschalen aus.", "status": "Offen", "ersteller": "Mitarbeiter A"},
             {"id": 2, "titel": "Ladezeit bei Dokumenten", "beschreibung": "Das Office-Plugin braucht sehr lange, um zu analysieren.", "status": "In Bearbeitung", "ersteller": "Mitarbeiter B"},
         ],
         "ticket_counter": 3
@@ -621,20 +623,18 @@ with st.sidebar:
         
     st.divider()
 
-    if st.button(f"{st.session_state.benutzername} ({st.session_state.rolle})", icon=":material/account_circle:", use_container_width=True):
+    if st.button(f"{st.session_state.benutzername} ({st.session_state.rolle})", icon=":material/account_circle:", use_container_width=True, type="primary"):
         st.session_state.aktuelle_seite = "profil"
         st.rerun()
 
     st.markdown("<div style='margin-bottom: 0.5rem;'></div>", unsafe_allow_html=True)
 
-    st.markdown('<div class="btn-sekundaer">', unsafe_allow_html=True)
-    if st.button("Sitzung beenden", icon=":material/logout:", use_container_width=True):
+    if st.button("Sitzung beenden", icon=":material/logout:", use_container_width=True, type="primary"):
         st.session_state.eingeloggt = False
         st.session_state.benutzername = ""
         st.session_state.rolle = ""
         st.session_state.aktuelle_seite = "main"
         st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
     
     st.divider()
 
@@ -681,11 +681,9 @@ if st.session_state.aktuelle_seite == "profil":
         "</p>", unsafe_allow_html=True
     )
     
-    st.markdown('<div class="btn-sekundaer" style="max-width: 300px;">', unsafe_allow_html=True)
-    if st.button("Zurück zum WMS Dashboard", icon=":material/arrow_back:", use_container_width=True):
+    if st.button("Zurück zum WMS Dashboard", icon=":material/arrow_back:", use_container_width=True, type="primary"):
         st.session_state.aktuelle_seite = "main"
         st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
     
     st.markdown("---")
 
@@ -753,7 +751,7 @@ else:
 
             for col, key in zip([col_b1, col_b2, col_b3], bsp_keys):
                 with col:
-                    if st.button(key, key=f"bsp_{key}", icon=":material/lightbulb:", use_container_width=True):
+                    if st.button(key, key=f"bsp_{key}", icon=":material/lightbulb:", use_container_width=True, type="primary"):
                         eintrag = {
                             "frage": BEISPIELFRAGEN[key]["frage_voll"],
                             "antwort": BEISPIELFRAGEN[key]["antwort"],
@@ -796,11 +794,11 @@ else:
                     if akt_fb is None:
                         col_p, col_n, col_leer = st.columns([1.5, 2, 5])
                         with col_p:
-                            if st.button("Hilfreich", key=f"pos_{idx}", icon=":material/thumb_up:"):
+                            if st.button("Hilfreich", key=f"pos_{idx}", icon=":material/thumb_up:", type="primary"):
                                 st.session_state.feedback[fb_key] = "positiv"
                                 st.rerun()
                         with col_n:
-                            if st.button("Verbesserungsbedarf", key=f"neg_{idx}", icon=":material/thumb_down:"):
+                            if st.button("Verbesserungsbedarf", key=f"neg_{idx}", icon=":material/thumb_down:", type="primary"):
                                 st.session_state.feedback[fb_key] = "negativ"
                                 st.rerun()
 
@@ -808,7 +806,7 @@ else:
                         st.success("Feedback erfolgreich gespeichert: Antwort war hilfreich.")
 
                     elif akt_fb == "negativ":
-                        st.warning("Wir danken für das Feedback. Bitte konkretisieren Sie den Bedarf:")
+                        st.warning("Wir danken für das Feedback. Bitte konkretisierung Sie den Bedarf:")
                         with st.form(key=f"vb_form_{idx}", clear_on_submit=True):
                             vb_text = st.text_area(
                                 "Konstruktiver Vorschlag",
@@ -943,7 +941,7 @@ else:
                         st.markdown('<div class="onto-titel"><span class="icon">elderly</span> Domäne: Pflege</div>', unsafe_allow_html=True)
                         st.markdown("""
 **SGB XI – Pflegeleistungen**
-- Pflegegrades 1 bis 5
+- Pflegegrade 1 bis 5
 - Sachleistungen (§ 36)
 - Entlastungsbetrag (§ 45b)
 - Verhinderungspflege (§ 39)
@@ -1124,11 +1122,11 @@ else:
 
                         with col_btn:
                             if status is None:
-                                if st.button("Axiom freigeben", key=f"akz_{rid}", icon=":material/check:", use_container_width=True):
+                                if st.button("Axiom freigeben", key=f"akz_{rid}", icon=":material/check:", use_container_width=True, type="primary"):
                                     st.session_state.regel_status[rid] = "akzeptiert"
                                     st.rerun()
                                 st.markdown("<br>", unsafe_allow_html=True)
-                                if st.button("Axiom verwerfen", key=f"abl_{rid}", icon=":material/close:", use_container_width=True):
+                                if st.button("Axiom verwerfen", key=f"abl_{rid}", icon=":material/close:", use_container_width=True, type="primary"):
                                     st.session_state.regel_status[rid] = "abgelehnt"
                                     st.rerun()
                             else:
@@ -1297,10 +1295,10 @@ else:
 
                 st.markdown("---")
 
-                if st.button("Richtlinie einsehen", icon=":material/visibility:", use_container_width=True):
+                if st.button("Richtlinie einsehen", icon=":material/visibility:", use_container_width=True, type="primary"):
                     st.info("Der direkte Dokumenten-Abruf ist in der Sandbox-Umgebung deaktiviert.")
 
-                if st.button("Compliance-Scan ausführen", icon=":material/fact_check:", use_container_width=True):
+                if st.button("Compliance-Scan ausführen", icon=":material/fact_check:", use_container_width=True, type="primary"):
                     st.info("Das Compliance-Modul benötigt die Freischaltung der REST-Schnittstellen.")
 
                 st.markdown("---")
