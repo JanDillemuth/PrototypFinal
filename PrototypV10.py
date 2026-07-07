@@ -516,7 +516,7 @@ def init_session():
         "manuelle_regeln": [],
         "regel_status": {r["id"]: None for r in REGEL_KANDIDATEN},
         "tickets": [
-            {"id": 1, "titel": "Fehler bei SGB XII Abfrage", "beschreibung": "Das System gives manchmal noch die veralteten Pauschalen aus.", "status": "Offen", "ersteller": "Mitarbeiter A"},
+            {"id": 1, "titel": "Fehler bei SGB XII Abfrage", "beschreibung": "Das System gibt manchmal noch die veralteten Pauschalen aus.", "status": "Offen", "ersteller": "Mitarbeiter A"},
             {"id": 2, "titel": "Ladezeit bei Dokumenten", "beschreibung": "Das Office-Plugin braucht sehr lange, um zu analysieren.", "status": "In Bearbeitung", "ersteller": "Mitarbeiter B"},
         ],
         "ticket_counter": 3
@@ -806,7 +806,7 @@ else:
                         st.success("Feedback erfolgreich gespeichert: Antwort war hilfreich.")
 
                     elif akt_fb == "negativ":
-                        st.warning("Wir danken für das Feedback. Bitte konkretisierung Sie den Bedarf:")
+                        st.warning("Wir danken für das Feedback. Bitte konkretisieren Sie den Bedarf:")
                         with st.form(key=f"vb_form_{idx}", clear_on_submit=True):
                             vb_text = st.text_area(
                                 "Konstruktiver Vorschlag",
@@ -854,8 +854,35 @@ else:
                 with col_btn:
                     absenden = st.form_submit_button("Senden", icon=":material/send:", use_container_width=True)
 
-            
-            
+            if absenden and freitext.strip():
+                if "Eco" in st.session_state.ki_modus:
+                    wartezeit = 1.0 
+                    lade_text = '<span class="icon">energy_savings_leaf</span> Eco-Modus aktiv: Schnelle Verarbeitung läuft ...'
+                elif "Deep-Thinking" in st.session_state.ki_modus:
+                    wartezeit = 3.5
+                    lade_text = '<span class="icon">psychology</span> Analytischer Modus: Tiefgreifende SGB-Prüfung läuft ...'
+                else:
+                    wartezeit = 2.0
+                    lade_text = '<span class="icon">memory</span> Neuro-Symbolische Verarbeitung läuft ...'
+
+                lade_platzhalter = st.empty()
+                lade_platzhalter.markdown(f"""
+                <div class="loader-container">
+                    <div class="loader-text">{lade_text}</div>
+                    <div class="modern-loader"></div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                time.sleep(wartezeit)
+                lade_platzhalter.empty()
+
+                eintrag = {
+                    "frage": freitext.strip(),
+                    "antwort": PLATZHALTER_ANTWORT,
+                }
+                st.session_state.chat_verlauf.append(eintrag)
+                st.rerun()
+
 
         # --- TAB: SUPPORT-TICKET ERSTELLEN ---
         with tab_ticket:
