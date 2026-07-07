@@ -275,8 +275,7 @@ st.markdown("""
     }
 
     /* -------------------------------------------------------------
-       EIGENES KARTEN-DESIGN (VÖLLIG ENTKOPPELT VON STREAMLIT TABS)
-       Sorgt für den dezenten Rand und verhindert jeglichen Layout-Crash!
+       EIGENES KARTEN-DESIGN FÜR REINE TEXTELEMENTE
        ------------------------------------------------------------- */
     .komm-card {
         border: 1px solid rgba(18, 115, 74, 0.15) !important;
@@ -368,7 +367,7 @@ st.markdown("""
         cursor: pointer;
         margin: 0 4px;
         position: relative;
-        vertical-align: super; /* Macht es hochgestellt */
+        vertical-align: super;
         box-shadow: 0 2px 4px rgba(18, 115, 74, 0.1);
         transition: background-color 0.2s;
     }
@@ -397,7 +396,6 @@ st.markdown("""
         box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         pointer-events: none;
     }
-    /* Kleines Dreieck unter der Tooltip-Box */
     .onto-ref .tooltiptext::after {
         content: "";
         position: absolute;
@@ -408,7 +406,6 @@ st.markdown("""
         border-style: solid;
         border-color: var(--text-dunkel) transparent transparent transparent;
     }
-    /* Tooltip beim Hover (Desktop) oder Klicken/Tippen (Mobile) anzeigen */
     .onto-ref:hover .tooltiptext, .onto-ref:active .tooltiptext {
         visibility: visible;
         opacity: 1;
@@ -529,15 +526,6 @@ def init_session():
             st.session_state[schluessel] = wert
 
 init_session()
-
-
-# Callback zum Speichern des Ticket-Status (Verhindert Tab-Verlust beim Neuladen)
-def speichere_ticket_status(ticket_id, widget_key):
-    neuer_status = st.session_state[widget_key]
-    for ticket in st.session_state.tickets:
-        if ticket["id"] == ticket_id:
-            ticket["status"] = neuer_status
-            break
 
 
 # =============================================================================
@@ -732,7 +720,7 @@ else:
         ist_admin = st.session_state.rolle == "Administrator"
 
         if ist_admin:
-            # Fester Key garantiert reitertreues Neuladen
+            # key-Attribut entfernt, da Streamlit native Tabs ihren State selbst am besten behalten!
             tab_chat, tab_ticket, tab_onto, tab_regeln, tab_ticket_admin, tab_metriken = st.tabs([
                 ":material/forum: Wissensabfrage",
                 ":material/support_agent: Support",
@@ -740,12 +728,12 @@ else:
                 ":material/rule: Regelerkennung",
                 ":material/confirmation_number: Tickets",
                 ":material/analytics: Metriken",
-            ], key="wms_admin_tabs_persistent")
+            ])
         else:
             tab_chat, tab_ticket = st.tabs([
                 ":material/forum: Wissensabfrage", 
                 ":material/support_agent: Support"
-            ], key="wms_user_tabs_persistent")
+            ])
 
         # --- TAB: WISSENSABFRAGE (Chat-Interface) ---
         with tab_chat:
@@ -943,9 +931,10 @@ else:
                 col_p, col_a, col_j = st.columns(3)
 
                 with col_p:
-                    st.markdown('<div class="komm-card">', unsafe_allow_html=True)
-                    st.markdown('<div class="onto-titel"><span class="icon">elderly</span> Domäne: Pflege</div>', unsafe_allow_html=True)
-                    st.markdown("""
+                    # HIER: Statt fehlerhaftem st.markdown("<div>") wird nativ gestylt, um das Zerstören der Tab-Struktur zu verhindern.
+                    with st.container(border=True):
+                        st.markdown('<div class="onto-titel"><span class="icon">elderly</span> Domäne: Pflege</div>', unsafe_allow_html=True)
+                        st.markdown("""
 **SGB XI – Pflegeleistungen**
 - Pflegegrade 1 bis 5
 - Sachleistungen (§ 36)
@@ -957,21 +946,20 @@ else:
 - Pflegeberichte
 - MDK-Vorgaben
 """)
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    with st.expander("🔍 Hinterlegte Axiome einsehen"):
-                        st.markdown("""
-                        **Axiom P-01 (Exklusivität):** `IF Pflegegrad == 1 THEN LOCK(Sachleistung) AND ALLOW(Entlastungsbetrag)`  
-                        *Sichert ab, dass bei Pflegegrad 1 keine unzulässigen Sachleistungen abgerechnet werden.*
-                        
-                        **Axiom P-02 (Fristen-Eskalation):** `IF Zeit(Leistungserbringung) + 24h < Zeit(Jetzt) AND Status(Doku) == "Offen" THEN TRIGGER(Warnung_PDL)`  
-                        *Erzwingt MDK-konforme, tagaktuelle Dokumentation.*
-                        """)
-                    st.markdown('</div>', unsafe_allow_html=True)
+                        st.markdown("<br>", unsafe_allow_html=True)
+                        with st.expander("🔍 Hinterlegte Axiome einsehen"):
+                            st.markdown("""
+                            **Axiom P-01 (Exklusivität):** `IF Pflegegrad == 1 THEN LOCK(Sachleistung) AND ALLOW(Entlastungsbetrag)`  
+                            *Sichert ab, dass bei Pflegegrad 1 keine unzulässigen Sachleistungen abgerechnet werden.*
+                            
+                            **Axiom P-02 (Fristen-Eskalation):** `IF Zeit(Leistungserbringung) + 24h < Zeit(Jetzt) AND Status(Doku) == "Offen" THEN TRIGGER(Warnung_PDL)`  
+                            *Erzwingt MDK-konforme, tagaktuelle Dokumentation.*
+                            """)
 
                 with col_a:
-                    st.markdown('<div class="komm-card">', unsafe_allow_html=True)
-                    st.markdown('<div class="onto-titel"><span class="icon">accessible</span> Domäne: Assistenz</div>', unsafe_allow_html=True)
-                    st.markdown("""
+                    with st.container(border=True):
+                        st.markdown('<div class="onto-titel"><span class="icon">accessible</span> Domäne: Assistenz</div>', unsafe_allow_html=True)
+                        st.markdown("""
 **SGB IX – Eingliederungshilfe**
 - Persönliche Assistenz
 - Teilhabe am Arbeitsleben
@@ -982,21 +970,20 @@ else:
 - Zielvereinbarungen
 - Fortschreibung
 """)
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    with st.expander("🔍 Hinterlegte Axiome einsehen"):
-                        st.markdown("""
-                        **Axiom A-01 (Kausalität Hilfeplan):** `IF NOT EXISTS(Bedarfsermittlung) THEN LOCK(Zielvereinbarung)`  
-                        *Stellt sicher, dass keine Maßnahmen ohne vorherige, dokumentierte Bedarfsermittlung geplant werden.*
-                        
-                        **Axiom A-02 (Ressourcenzuteilung):** `IF Status(Bewilligung) == "Ausstehend" THEN LIMIT(Leistung, Notfallversorgung)`  
-                        *Verhindert die Erbringung nicht-gedeckter Leistungen vor Kostenzusage.*
-                        """)
-                    st.markdown('</div>', unsafe_allow_html=True)
+                        st.markdown("<br>", unsafe_allow_html=True)
+                        with st.expander("🔍 Hinterlegte Axiome einsehen"):
+                            st.markdown("""
+                            **Axiom A-01 (Kausalität Hilfeplan):** `IF NOT EXISTS(Bedarfsermittlung) THEN LOCK(Zielvereinbarung)`  
+                            *Stellt sicher, dass keine Maßnahmen ohne vorherige, dokumentierte Bedarfsermittlung geplant werden.*
+                            
+                            **Axiom A-02 (Ressourcenzuteilung):** `IF Status(Bewilligung) == "Ausstehend" THEN LIMIT(Leistung, Notfallversorgung)`  
+                            *Verhindert die Erbringung nicht-gedeckter Leistungen vor Kostenzusage.*
+                            """)
 
                 with col_j:
-                    st.markdown('<div class="komm-card">', unsafe_allow_html=True)
-                    st.markdown('<div class="onto-titel"><span class="icon">child_care</span> Domäne: Jugendhilfe</div>', unsafe_allow_html=True)
-                    st.markdown("""
+                    with st.container(border=True):
+                        st.markdown('<div class="onto-titel"><span class="icon">child_care</span> Domäne: Jugendhilfe</div>', unsafe_allow_html=True)
+                        st.markdown("""
 **SGB VIII – Leistungen**
 - Ambulante Hilfen (§ 27 ff.)
 - Sozialpädagogische Familienhilfe
@@ -1006,48 +993,46 @@ else:
 - Schweigepflicht (§ 203 StGB)
 - Aufbewahrungsfristen
 """)
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    with st.expander("🔍 Hinterlegte Axiome einsehen"):
-                        st.markdown("""
-                        **Axiom J-01 (Schutzauftrag § 8a):** `IF Indikator(Kindeswohlgefährdung) == True THEN OVERRIDE(Schweigepflicht) AND REQUIRE(Meldung_Jugendamt)`  
-                        *Priorisiert den aktiven Kinderschutz über Standard-Datenschutzvorgaben im Notfall.*
-                        
-                        **Axiom J-02 (Altersgrenzen):** `IF Alter(Klient) > 21 THEN REQUIRE(Sonderfallprüfung_SGB_VIII)`  
-                        *Löst automatische Prüfprozesse für Hilfe für junge Volljährige aus.*
-                        """)
-                    st.markdown('</div>', unsafe_allow_html=True)
+                        st.markdown("<br>", unsafe_allow_html=True)
+                        with st.expander("🔍 Hinterlegte Axiome einsehen"):
+                            st.markdown("""
+                            **Axiom J-01 (Schutzauftrag § 8a):** `IF Indikator(Kindeswohlgefährdung) == True THEN OVERRIDE(Schweigepflicht) AND REQUIRE(Meldung_Jugendamt)`  
+                            *Priorisiert den aktiven Kinderschutz über Standard-Datenschutzvorgaben im Notfall.*
+                            
+                            **Axiom J-02 (Altersgrenzen):** `IF Alter(Klient) > 21 THEN REQUIRE(Sonderfallprüfung_SGB_VIII)`  
+                            *Löst automatische Prüfprozesse für Hilfe für junge Volljährige aus.*
+                            """)
 
                 st.markdown("<br>", unsafe_allow_html=True)
                 
-                st.markdown('<div class="komm-card">', unsafe_allow_html=True)
-                st.markdown('<div class="onto-titel"><span class="icon">playlist_add_check</span> Produktiv geschaltete Reasoner-Regeln</div>', unsafe_allow_html=True)
-                st.markdown("Hier sehen Sie alle Axiome, die aus dem Vorschlagswesen administrativ in den aktiven Betrieb übernommen wurden.")
-                
-                alle_regeln_gesamt = REGEL_KANDIDATEN + st.session_state.manuelle_regeln
-                akzeptierte = [r for r in alle_regeln_gesamt if st.session_state.regel_status.get(r["id"]) == "akzeptiert"]
-                
-                if not akzeptierte:
-                    st.info("Aktuell wurden noch keine neuen Regeln in den produktiven Reasoner übernommen.")
-                else:
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    col_rtitel, col_rdatum = st.columns([3, 1])
-                    with col_rtitel:
-                        st.markdown("**Regeltitel / Axiom-Logik**")
-                    with col_rdatum:
-                        st.markdown("**Integration**")
-                        
-                    st.markdown("<hr style='margin: 0.5rem 0;'>", unsafe_allow_html=True)
+                with st.container(border=True):
+                    st.markdown('<div class="onto-titel"><span class="icon">playlist_add_check</span> Produktiv geschaltete Reasoner-Regeln</div>', unsafe_allow_html=True)
+                    st.markdown("Hier sehen Sie alle Axiome, die aus dem Vorschlagswesen administrativ in den aktiven Betrieb übernommen wurden.")
                     
-                    for regel in reversed(akzeptierte):
+                    alle_regeln_gesamt = REGEL_KANDIDATEN + st.session_state.manuelle_regeln
+                    akzeptierte = [r for r in alle_regeln_gesamt if st.session_state.regel_status.get(r["id"]) == "akzeptiert"]
+                    
+                    if not akzeptierte:
+                        st.info("Aktuell wurden noch keine neuen Regeln in den produktiven Reasoner übernommen.")
+                    else:
+                        st.markdown("<br>", unsafe_allow_html=True)
                         col_rtitel, col_rdatum = st.columns([3, 1])
                         with col_rtitel:
-                            st.markdown(f"**{regel['titel']}**")
-                            st.caption(f"{regel['beschreibung']}")
+                            st.markdown("**Regeltitel / Axiom-Logik**")
                         with col_rdatum:
-                            st.markdown('<span class="badge badge-ok"><span class="icon" style="font-size:14px;">bolt</span> Zuletzt hinzugefügt</span>', unsafe_allow_html=True)
-                        
+                            st.markdown("**Integration**")
+                            
                         st.markdown("<hr style='margin: 0.5rem 0;'>", unsafe_allow_html=True)
-                st.markdown('</div>', unsafe_allow_html=True)
+                        
+                        for regel in reversed(akzeptierte):
+                            col_rtitel, col_rdatum = st.columns([3, 1])
+                            with col_rtitel:
+                                st.markdown(f"**{regel['titel']}**")
+                                st.caption(f"{regel['beschreibung']}")
+                            with col_rdatum:
+                                st.markdown('<span class="badge badge-ok"><span class="icon" style="font-size:14px;">bolt</span> Zuletzt hinzugefügt</span>', unsafe_allow_html=True)
+                            
+                            st.markdown("<hr style='margin: 0.5rem 0;'>", unsafe_allow_html=True)
 
                 st.markdown("---")
                 col_m1, col_m2, col_m3 = st.columns(3)
@@ -1071,40 +1056,39 @@ else:
                 if "manuelle_regeln" not in st.session_state:
                     st.session_state.manuelle_regeln = []
 
-                st.markdown('<div class="komm-card">', unsafe_allow_html=True)
-                st.markdown('<div class="onto-titel"><span class="icon">schema</span> Neue Ontologie-Regel erstellen</div>', unsafe_allow_html=True)
-                st.markdown("Definieren Sie hier manuell neue semantische Zusammenhänge (Wenn-Dann-Abfolgen).")
-                
-                with st.form("axiom_form", clear_on_submit=True):
-                    regel_titel = st.text_input("Titel der Regel", placeholder="z.B. Abrechnungsregel Sonderfall")
+                with st.container(border=True):
+                    st.markdown('<div class="onto-titel"><span class="icon">schema</span> Neue Ontologie-Regel erstellen</div>', unsafe_allow_html=True)
+                    st.markdown("Definieren Sie hier manuell neue semantische Zusammenhänge (Wenn-Dann-Abfolgen).")
                     
-                    col_w, col_b, col_d = st.columns(3)
-                    with col_w:
-                        entitaet = st.text_input("Wenn (Entität)", placeholder="z.B. Pflegegrad")
-                    with col_b:
-                        beziehung = st.text_input("Beziehung", placeholder="z.B. ist gleich (=) 1")
-                    with col_d:
-                        objekt = st.text_input("Dann (Objekt / Aktion)", placeholder="z.B. greift Entlastungsbetrag")
+                    with st.form("axiom_form", clear_on_submit=True):
+                        regel_titel = st.text_input("Titel der Regel", placeholder="z.B. Abrechnungsregel Sonderfall")
                         
-                    submit_axiom = st.form_submit_button("Regel generieren", icon=":material/add_task:")
-                    
-                    if submit_axiom:
-                        if regel_titel.strip() and entitaet.strip() and beziehung.strip() and objekt.strip():
-                            neue_id = 100 + len(st.session_state.manuelle_regeln)
-                            neue_regel = {
-                                "id": neue_id,
-                                "titel": regel_titel.strip(),
-                                "beschreibung": f"Wenn {entitaet.strip()} {beziehung.strip()}, dann {objekt.strip()}.",
-                                "haeufigkeit": "Manuell erstellt"
-                            }
-                            st.session_state.manuelle_regeln.append(neue_regel)
-                            st.session_state.regel_status[neue_id] = None 
+                        col_w, col_b, col_d = st.columns(3)
+                        with col_w:
+                            entitaet = st.text_input("Wenn (Entität)", placeholder="z.B. Pflegegrad")
+                        with col_b:
+                            beziehung = st.text_input("Beziehung", placeholder="z.B. ist gleich (=) 1")
+                        with col_d:
+                            objekt = st.text_input("Dann (Objekt / Aktion)", placeholder="z.B. greift Entlastungsbetrag")
                             
-                            st.success("Neue Regel erfolgreich zur Liste hinzugefügt.")
-                            st.rerun()
-                        else:
-                            st.error("Bitte füllen Sie alle vier Felder aus, um die Regel zu generieren.", icon=":material/warning:")
-                st.markdown('</div>', unsafe_allow_html=True)
+                        submit_axiom = st.form_submit_button("Regel generieren", icon=":material/add_task:")
+                        
+                        if submit_axiom:
+                            if regel_titel.strip() and entitaet.strip() and beziehung.strip() and objekt.strip():
+                                neue_id = 100 + len(st.session_state.manuelle_regeln)
+                                neue_regel = {
+                                    "id": neue_id,
+                                    "titel": regel_titel.strip(),
+                                    "beschreibung": f"Wenn {entitaet.strip()} {beziehung.strip()}, dann {objekt.strip()}.",
+                                    "haeufigkeit": "Manuell erstellt"
+                                }
+                                st.session_state.manuelle_regeln.append(neue_regel)
+                                st.session_state.regel_status[neue_id] = None 
+                                
+                                st.success("Neue Regel erfolgreich zur Liste hinzugefügt.")
+                                st.rerun()
+                            else:
+                                st.error("Bitte füllen Sie alle vier Felder aus, um die Regel zu generieren.", icon=":material/warning:")
                 
                 st.markdown("---")
 
@@ -1114,35 +1098,34 @@ else:
                     rid = regel["id"]
                     status = st.session_state.regel_status[rid]
 
-                    st.markdown('<div class="komm-card">', unsafe_allow_html=True)
-                    col_info, col_btn = st.columns([4, 1.5])
+                    with st.container(border=True):
+                        col_info, col_btn = st.columns([4, 1.5])
 
-                    with col_info:
-                        st.markdown(f"**{regel['titel']}**")
-                        st.markdown(regel["beschreibung"])
-                        
-                        if "Manuell" in str(regel['haeufigkeit']):
-                            st.caption("Evidenz: Manuell durch Administrator erstellt")
-                        else:
-                            st.caption(f"Statistische Evidenz: Abgeleitet aus {regel['haeufigkeit']} Interaktionen")
+                        with col_info:
+                            st.markdown(f"**{regel['titel']}**")
+                            st.markdown(regel["beschreibung"])
+                            
+                            if "Manuell" in str(regel['haeufigkeit']):
+                                st.caption("Evidenz: Manuell durch Administrator erstellt")
+                            else:
+                                st.caption(f"Statistische Evidenz: Abgeleitet aus {regel['haeufigkeit']} Interaktionen")
 
-                        if status == "akzeptiert":
-                            st.markdown('<span class="badge badge-ok"><span class="icon" style="font-size:14px;">check</span> Freigegeben</span>', unsafe_allow_html=True)
-                        elif status == "abgelehnt":
-                            st.markdown('<span class="badge badge-nein"><span class="icon" style="font-size:14px;">close</span> Verworfen</span>', unsafe_allow_html=True)
+                            if status == "akzeptiert":
+                                st.markdown('<span class="badge badge-ok"><span class="icon" style="font-size:14px;">check</span> Freigegeben</span>', unsafe_allow_html=True)
+                            elif status == "abgelehnt":
+                                st.markdown('<span class="badge badge-nein"><span class="icon" style="font-size:14px;">close</span> Verworfen</span>', unsafe_allow_html=True)
 
-                    with col_btn:
-                        if status is None:
-                            if st.button("Axiom freigeben", key=f"akz_{rid}", icon=":material/check:", use_container_width=True):
-                                st.session_state.regel_status[rid] = "akzeptiert"
-                                st.rerun()
-                            st.markdown("<br>", unsafe_allow_html=True)
-                            if st.button("Axiom verwerfen", key=f"abl_{rid}", icon=":material/close:", use_container_width=True):
-                                st.session_state.regel_status[rid] = "abgelehnt"
-                                st.rerun()
-                        else:
-                            st.markdown("**Status: Geprüft**")
-                    st.markdown('</div>', unsafe_allow_html=True)
+                        with col_btn:
+                            if status is None:
+                                if st.button("Axiom freigeben", key=f"akz_{rid}", icon=":material/check:", use_container_width=True):
+                                    st.session_state.regel_status[rid] = "akzeptiert"
+                                    st.rerun()
+                                st.markdown("<br>", unsafe_allow_html=True)
+                                if st.button("Axiom verwerfen", key=f"abl_{rid}", icon=":material/close:", use_container_width=True):
+                                    st.session_state.regel_status[rid] = "abgelehnt"
+                                    st.rerun()
+                            else:
+                                st.markdown("**Status: Geprüft**")
 
 
             # --- TAB: TICKET-VERWALTUNG (ADMIN BEREICH) ---
@@ -1158,45 +1141,37 @@ else:
                     st.info("Das Ticket-System verzeichnet aktuell keine offenen Vorgänge.")
                 else:
                     for tk in reversed(st.session_state.tickets):
-                        st.markdown('<div class="komm-card">', unsafe_allow_html=True)
-                        col_t1, col_t2 = st.columns([3, 1.2])
-                        
-                        with col_t1:
-                            st.markdown(f"**Vorgang #{tk['id']} | {tk['titel']}**")
-                            st.markdown(f"{tk['beschreibung']}")
-                            st.caption(f"Gemeldet von: {tk['ersteller']}")
-
-                            if tk['status'] == "Offen":
-                                badge_html = '<span class="badge badge-nein">STATUS: OFFEN</span>'
-                            elif tk['status'] == "In Bearbeitung":
-                                badge_html = '<span class="badge badge-neutral">STATUS: IN BEARBEITUNG</span>'
-                            else:
-                                badge_html = '<span class="badge badge-ok">STATUS: GESCHLOSSEN</span>'
-                                
-                            st.markdown(badge_html, unsafe_allow_html=True)
-
-                        with col_t2:
-                            # Nutzung von st.form mit einem on_click CallBack, um die Seite an Ort und Stelle
-                            # neu aufzubauen und den State des aktiven Reiters nicht zu verlieren.
-                            status_optionen = ["Offen", "In Bearbeitung", "Geschlossen"]
-                            auswahl_key = f"select_status_{tk['id']}"
+                        # Nutzt den sauberen Streamlit-Container, damit die Layout-Struktur nicht zerbricht!
+                        with st.container(border=True):
+                            col_t1, col_t2 = st.columns([3, 1.2])
                             
-                            with st.form(key=f"status_form_{tk['id']}", clear_on_submit=False):
-                                st.selectbox(
-                                    f"Vorgangsstatus für Ticket {tk['id']}",
-                                    options=status_optionen,
-                                    index=status_optionen.index(tk['status']),
-                                    key=auswahl_key,
-                                    label_visibility="collapsed"
-                                )
-                                # Button nutzt Callback Funktion "speichere_ticket_status"
-                                st.form_submit_button(
-                                    "Speichern", 
-                                    use_container_width=True,
-                                    on_click=speichere_ticket_status,
-                                    args=(tk['id'], auswahl_key)
-                                )
-                        st.markdown('</div>', unsafe_allow_html=True)
+                            with col_t1:
+                                st.markdown(f"**Vorgang #{tk['id']} | {tk['titel']}**")
+                                st.markdown(f"{tk['beschreibung']}")
+                                st.caption(f"Gemeldet von: {tk['ersteller']}")
+
+                                if tk['status'] == "Offen":
+                                    st.markdown('<span class="badge badge-nein">STATUS: OFFEN</span>', unsafe_allow_html=True)
+                                elif tk['status'] == "In Bearbeitung":
+                                    st.markdown('<span class="badge badge-neutral">STATUS: IN BEARBEITUNG</span>', unsafe_allow_html=True)
+                                else:
+                                    st.markdown('<span class="badge badge-ok">STATUS: GESCHLOSSEN</span>', unsafe_allow_html=True)
+
+                            with col_t2:
+                                # Die Form verhindert ab sofort, dass eine bloße Dropdown-Auswahl die Seite aktualisiert.
+                                # Erst der Speichern-Button löst den Rerun aus und übernimmt den Wert endgültig.
+                                with st.form(key=f"status_form_{tk['id']}", clear_on_submit=False):
+                                    status_optionen = ["Offen", "In Bearbeitung", "Geschlossen"]
+                                    auswahl = st.selectbox(
+                                        "Status ändern",
+                                        options=status_optionen,
+                                        index=status_optionen.index(tk['status']),
+                                        label_visibility="collapsed"
+                                    )
+                                    # form_submit_button löst nur dann ein True aus, wenn er geklickt wird
+                                    if st.form_submit_button("Speichern", use_container_width=True):
+                                        tk['status'] = auswahl
+                                        st.rerun()
 
 
             # --- TAB: METRIKEN ---
@@ -1209,7 +1184,8 @@ else:
                 )
 
                 m1, m2, m3, m4 = st.columns(4)
-
+                
+                # Hier können wir html-Divs beibehalten, da sich absolut keine interaktiven Streamlit-Widgets darin befinden.
                 with m1:
                     st.markdown('<div class="komm-card">', unsafe_allow_html=True)
                     st.markdown(f'<div class="metrik-wert" style="text-align: center;">{METRIKEN["serverauslastung_pct"]} %</div>', unsafe_allow_html=True)
@@ -1306,29 +1282,28 @@ else:
             )
 
         with col_panel:
-            st.markdown('<div class="komm-card">', unsafe_allow_html=True)
-            st.markdown('<div class="onto-titel"><span class="icon">neurology</span> WMS Systemassistenz</div>', unsafe_allow_html=True)
+            with st.container(border=True):
+                st.markdown('<div class="onto-titel"><span class="icon">neurology</span> WMS Systemassistenz</div>', unsafe_allow_html=True)
 
-            st.markdown("**Extrahierte Parameter:**")
-            st.markdown("- Pflegegrad 2  \n- Grundpflege  \n- Medikamentengabe")
+                st.markdown("**Extrahierte Parameter:**")
+                st.markdown("- Pflegegrad 2  \n- Grundpflege  \n- Medikamentengabe")
 
-            st.markdown("---")
+                st.markdown("---")
 
-            st.markdown("**Korrelierte Richtlinien:**")
-            st.markdown(
-                "1. Abrechnungsregeln Pflegegrad 2 (§ 36 SGB XI)  \n"
-                "2. Dokumentationsstandards MDK  \n"
-                "3. Protokollierungspflicht Medikamente"
-            )
+                st.markdown("**Korrelierte Richtlinien:**")
+                st.markdown(
+                    "1. Abrechnungsregeln Pflegegrad 2 (§ 36 SGB XI)  \n"
+                    "2. Dokumentationsstandards MDK  \n"
+                    "3. Protokollierungspflicht Medikamente"
+                )
 
-            st.markdown("---")
+                st.markdown("---")
 
-            if st.button("Richtlinie einsehen", icon=":material/visibility:", use_container_width=True):
-                st.info("Der direkte Dokumenten-Abruf ist in der Sandbox-Umgebung deaktiviert.")
+                if st.button("Richtlinie einsehen", icon=":material/visibility:", use_container_width=True):
+                    st.info("Der direkte Dokumenten-Abruf ist in der Sandbox-Umgebung deaktiviert.")
 
-            if st.button("Compliance-Scan ausführen", icon=":material/fact_check:", use_container_width=True):
-                st.info("Das Compliance-Modul benötigt die Freischaltung der REST-Schnittstellen.")
+                if st.button("Compliance-Scan ausführen", icon=":material/fact_check:", use_container_width=True):
+                    st.info("Das Compliance-Modul benötigt die Freischaltung der REST-Schnittstellen.")
 
-            st.markdown("---")
-            st.caption("Verbindungsstatus: API Offline (Simulation)")
-            st.markdown('</div>', unsafe_allow_html=True)
+                st.markdown("---")
+                st.caption("Verbindungsstatus: API Offline (Simulation)")
