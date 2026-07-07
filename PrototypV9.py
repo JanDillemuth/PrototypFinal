@@ -275,21 +275,21 @@ st.markdown("""
     }
 
     /* -------------------------------------------------------------
-       NATIVE STREAMLIT CONTAINER STYLING (LÖST DAS BOXEN-PROBLEM)
-       Ersetzt die alte .moderne-karte Klasse. Sorgt für den dezenten, 
-       grünen Rand, den weichen Schatten und den Hover-Effekt!
+       EIGENES KARTEN-DESIGN (VÖLLIG ENTKOPPELT VON STREAMLIT TABS)
+       Sorgt für den dezenten Rand und verhindert jeglichen Layout-Crash!
        ------------------------------------------------------------- */
-    div[data-testid="stMain"] div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"] {
+    .komm-card {
         border: 1px solid rgba(18, 115, 74, 0.15) !important;
         border-radius: var(--radius-klein) !important;
         background-color: #ffffff !important;
         box-shadow: var(--schatten-weich) !important;
         transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-        padding: 1.2rem;       /* !important entfernt, damit Tabs unsichtbar werden können */
-        margin-bottom: 0.6rem;  /* !important entfernt */
+        padding: 1.4rem !important;
+        margin-bottom: 0.8rem !important;
+        text-align: left !important;
     }
-    div[data-testid="stMain"] div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"]:hover {
-        transform: translateY(-2px);
+    .komm-card:hover {
+        transform: translateY(-2px) !important;
         box-shadow: 0 8px 24px rgba(18, 115, 74, 0.12) !important;
         border-color: rgba(18, 115, 74, 0.3) !important;
     }
@@ -429,7 +429,7 @@ BEISPIELFRAGEN = {
             "Pflegegrad 1 berechtigt zur Inanspruchnahme des Entlastungsbetrages "
             "gemäß § 45b SGB XI in Höhe von 125 Euro monatlich. "
             "<span class='onto-ref'>1<span class='tooltiptext'><strong>📌 Abrechnungsregel Pflegegrad 1</strong><br>Ontologie erzwang Verweis auf § 45b SGB XI. Sachleistungen wurden logisch ausgeschlossen.</span></span> "
-            "Eine Anerkennung als Pflegeleistung im Sinne der Sachleistungsvergabe (§ 36 SGB XI) ist "
+            "Eine Anerkennung als Pflegeleistung im Sinne der Sachleistungsvergabe (§ 36 SGB XI) is "
             "bei Pflegegrad 1 nicht möglich. Die Abrechnung erfolgt ausschließlich "
             "über den Entlastungsbetrag direkt mit der Pflegekasse. Interne "
             "Abrechnungsfrist: bis zum 5. des Folgemonats. "
@@ -529,13 +529,6 @@ def init_session():
             st.session_state[schluessel] = wert
 
 init_session()
-
-def update_ticket_status(ticket_id, selectbox_key):
-    new_status = st.session_state[selectbox_key]
-    for tk in st.session_state.tickets:
-        if tk["id"] == ticket_id:
-            tk["status"] = new_status
-            break
 
 # =============================================================================
 # ABSCHNITT 4: LOGIN-BILDSCHIRM (Zugriffskontrolle)
@@ -701,28 +694,29 @@ if st.session_state.aktuelle_seite == "profil":
     col_prof1, col_prof2 = st.columns(2)
 
     with col_prof1:
-        # HIER WIRD NUN NATIVE STREAMLIT CONTAINER GENUTZT
-        with st.container(border=True):
-            st.markdown('<div class="onto-titel"><span class="icon">badge</span> Persönliche Daten</div>', unsafe_allow_html=True)
-            st.markdown('<div class="profil-header-label">Vollständiger Name</div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="profil-header-wert">{st.session_state.benutzername}</div>', unsafe_allow_html=True)
-            st.markdown('<div class="profil-header-label">Organisatorische Zuordnung</div>', unsafe_allow_html=True)
-            st.markdown('<div class="profil-header-wert">Zentrale Dienste (Bockenheim)</div>', unsafe_allow_html=True)
-            st.markdown('<div class="profil-header-label">Dienstliche E-Mail</div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="profil-header-wert">{st.session_state.benutzername.lower()}@komm-ev.de</div>', unsafe_allow_html=True)
+        st.markdown('<div class="komm-card">', unsafe_allow_html=True)
+        st.markdown('<div class="onto-titel"><span class="icon">badge</span> Persönliche Daten</div>', unsafe_allow_html=True)
+        st.markdown('<div class="profil-header-label">Vollständiger Name</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="profil-header-wert">{st.session_state.benutzername}</div>', unsafe_allow_html=True)
+        st.markdown('<div class="profil-header-label">Organisatorische Zuordnung</div>', unsafe_allow_html=True)
+        st.markdown('<div class="profil-header-wert">Zentrale Dienste (Bockenheim)</div>', unsafe_allow_html=True)
+        st.markdown('<div class="profil-header-label">Dienstliche E-Mail</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="profil-header-wert">{st.session_state.benutzername.lower()}@komm-ev.de</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
     with col_prof2:
-        with st.container(border=True):
-            st.markdown('<div class="onto-titel"><span class="icon">security</span> Sicherheit & Autorisierung</div>', unsafe_allow_html=True)
-            st.markdown('<div class="profil-header-label">Systemrolle (RBAC)</div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="profil-header-wert">{st.session_state.rolle}</div>', unsafe_allow_html=True)
-            st.markdown('<div class="profil-header-label">Zugriffslevel</div>', unsafe_allow_html=True)
-            if st.session_state.rolle == "Administrator":
-                st.markdown('<div class="profil-header-wert"><span class="badge badge-ok"><span class="icon" style="font-size:14px;">check_circle</span> Vollzugriff (Tier 1)</span></div>', unsafe_allow_html=True)
-            else:
-                st.markdown('<div class="profil-header-wert"><span class="badge badge-neutral"><span class="icon" style="font-size:14px;">info</span> Standardzugriff (Tier 3)</span></div>', unsafe_allow_html=True)
-            st.markdown('<div class="profil-header-label">Letzter Login</div>', unsafe_allow_html=True)
-            st.markdown('<div class="profil-header-wert">Heute, 08:14 Uhr (IP: 192.168.10.45)</div>', unsafe_allow_html=True)
+        st.markdown('<div class="komm-card">', unsafe_allow_html=True)
+        st.markdown('<div class="onto-titel"><span class="icon">security</span> Sicherheit & Autorisierung</div>', unsafe_allow_html=True)
+        st.markdown('<div class="profil-header-label">Systemrolle (RBAC)</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="profil-header-wert">{st.session_state.rolle}</div>', unsafe_allow_html=True)
+        st.markdown('<div class="profil-header-label">Zugriffslevel</div>', unsafe_allow_html=True)
+        if st.session_state.rolle == "Administrator":
+            st.markdown('<div class="profil-header-wert"><span class="badge badge-ok"><span class="icon" style="font-size:14px;">check_circle</span> Vollzugriff (Tier 1)</span></div>', unsafe_allow_html=True)
+        else:
+            st.markdown('<div class="profil-header-wert"><span class="badge badge-neutral"><span class="icon" style="font-size:14px;">info</span> Standardzugriff (Tier 3)</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="profil-header-label">Letzter Login</div>', unsafe_allow_html=True)
+        st.markdown('<div class="profil-header-wert">Heute, 08:14 Uhr (IP: 192.168.10.45)</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------
 # HAUPTSEITE: WMS ANWENDUNG
@@ -743,7 +737,7 @@ else:
                 ":material/rule: Regelerkennung",
                 ":material/confirmation_number: Tickets",
                 ":material/analytics: Metriken",
-            ], key="admin_tabs_persistent")
+            ])
         else:
             tab_chat, tab_ticket = st.tabs([
                 ":material/forum: Wissensabfrage", 
@@ -918,7 +912,7 @@ else:
                 with col_tbtn:
                     ticket_absenden = st.form_submit_button("Support-Ticket sicher übertragen", icon=":material/send_and_archive:")
 
-           # Wenn der Button geklickt wurde...
+            # Wenn der Button geklickt wurde...
             if ticket_absenden:
                 # ...prüfen wir zuerst, ob eines der Felder leer ist
                 if not ticket_titel.strip() or not ticket_beschr.strip():
@@ -954,9 +948,9 @@ else:
                 col_p, col_a, col_j = st.columns(3)
 
                 with col_p:
-                    with st.container(border=True):
-                        st.markdown('<div class="onto-titel"><span class="icon">elderly</span> Domäne: Pflege</div>', unsafe_allow_html=True)
-                        st.markdown("""
+                    st.markdown('<div class="komm-card">', unsafe_allow_html=True)
+                    st.markdown('<div class="onto-titel"><span class="icon">elderly</span> Domäne: Pflege</div>', unsafe_allow_html=True)
+                    st.markdown("""
 **SGB XI – Pflegeleistungen**
 - Pflegegrade 1 bis 5
 - Sachleistungen (§ 36)
@@ -968,20 +962,21 @@ else:
 - Pflegeberichte
 - MDK-Vorgaben
 """)
-                        st.markdown("<br>", unsafe_allow_html=True)
-                        with st.expander("🔍 Hinterlegte Axiome einsehen"):
-                            st.markdown("""
-                            **Axiom P-01 (Exklusivität):** `IF Pflegegrad == 1 THEN LOCK(Sachleistung) AND ALLOW(Entlastungsbetrag)`  
-                            *Sichert ab, dass bei Pflegegrad 1 keine unzulässigen Sachleistungen abgerechnet werden.*
-                            
-                            **Axiom P-02 (Fristen-Eskalation):** `IF Zeit(Leistungserbringung) + 24h < Zeit(Jetzt) AND Status(Doku) == "Offen" THEN TRIGGER(Warnung_PDL)`  
-                            *Erzwingt MDK-konforme, tagaktuelle Dokumentation.*
-                            """)
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    with st.expander("🔍 Hinterlegte Axiome einsehen"):
+                        st.markdown("""
+                        **Axiom P-01 (Exklusivität):** `IF Pflegegrad == 1 THEN LOCK(Sachleistung) AND ALLOW(Entlastungsbetrag)`  
+                        *Sichert ab, dass bei Pflegegrad 1 keine unzulässigen Sachleistungen abgerechnet werden.*
+                        
+                        **Axiom P-02 (Fristen-Eskalation):** `IF Zeit(Leistungserbringung) + 24h < Zeit(Jetzt) AND Status(Doku) == "Offen" THEN TRIGGER(Warnung_PDL)`  
+                        *Erzwingt MDK-konforme, tagaktuelle Dokumentation.*
+                        """)
+                    st.markdown('</div>', unsafe_allow_html=True)
 
                 with col_a:
-                    with st.container(border=True):
-                        st.markdown('<div class="onto-titel"><span class="icon">accessible</span> Domäne: Assistenz</div>', unsafe_allow_html=True)
-                        st.markdown("""
+                    st.markdown('<div class="komm-card">', unsafe_allow_html=True)
+                    st.markdown('<div class="onto-titel"><span class="icon">accessible</span> Domäne: Assistenz</div>', unsafe_allow_html=True)
+                    st.markdown("""
 **SGB IX – Eingliederungshilfe**
 - Persönliche Assistenz
 - Teilhabe am Arbeitsleben
@@ -992,20 +987,21 @@ else:
 - Zielvereinbarungen
 - Fortschreibung
 """)
-                        st.markdown("<br>", unsafe_allow_html=True)
-                        with st.expander("🔍 Hinterlegte Axiome einsehen"):
-                            st.markdown("""
-                            **Axiom A-01 (Kausalität Hilfeplan):** `IF NOT EXISTS(Bedarfsermittlung) THEN LOCK(Zielvereinbarung)`  
-                            *Stellt sicher, dass keine Maßnahmen ohne vorherige, dokumentierte Bedarfsermittlung geplant werden.*
-                            
-                            **Axiom A-02 (Ressourcenzuteilung):** `IF Status(Bewilligung) == "Ausstehend" THEN LIMIT(Leistung, Notfallversorgung)`  
-                            *Verhindert die Erbringung nicht-gedeckter Leistungen vor Kostenzusage.*
-                            """)
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    with st.expander("🔍 Hinterlegte Axiome einsehen"):
+                        st.markdown("""
+                        **Axiom A-01 (Kausalität Hilfeplan):** `IF NOT EXISTS(Bedarfsermittlung) THEN LOCK(Zielvereinbarung)`  
+                        *Stellt sicher, dass keine Maßnahmen ohne vorherige, dokumentierte Bedarfsermittlung geplant werden.*
+                        
+                        **Axiom A-02 (Ressourcenzuteilung):** `IF Status(Bewilligung) == "Ausstehend" THEN LIMIT(Leistung, Notfallversorgung)`  
+                        *Verhindert die Erbringung nicht-gedeckter Leistungen vor Kostenzusage.*
+                        """)
+                    st.markdown('</div>', unsafe_allow_html=True)
 
                 with col_j:
-                    with st.container(border=True):
-                        st.markdown('<div class="onto-titel"><span class="icon">child_care</span> Domäne: Jugendhilfe</div>', unsafe_allow_html=True)
-                        st.markdown("""
+                    st.markdown('<div class="komm-card">', unsafe_allow_html=True)
+                    st.markdown('<div class="onto-titel"><span class="icon">child_care</span> Domäne: Jugendhilfe</div>', unsafe_allow_html=True)
+                    st.markdown("""
 **SGB VIII – Leistungen**
 - Ambulante Hilfen (§ 27 ff.)
 - Sozialpädagogische Familienhilfe
@@ -1015,51 +1011,53 @@ else:
 - Schweigepflicht (§ 203 StGB)
 - Aufbewahrungsfristen
 """)
-                        st.markdown("<br>", unsafe_allow_html=True)
-                        with st.expander("🔍 Hinterlegte Axiome einsehen"):
-                            st.markdown("""
-                            **Axiom J-01 (Schutzauftrag § 8a):** `IF Indikator(Kindeswohlgefährdung) == True THEN OVERRIDE(Schweigepflicht) AND REQUIRE(Meldung_Jugendamt)`  
-                            *Priorisiert den aktiven Kinderschutz über Standard-Datenschutzvorgaben im Notfall.*
-                            
-                            **Axiom J-02 (Altersgrenzen):** `IF Alter(Klient) > 21 THEN REQUIRE(Sonderfallprüfung_SGB_VIII)`  
-                            *Löst automatische Prüfprozesse für Hilfe für junge Volljährige aus.*
-                            """)
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    with st.expander("🔍 Hinterlegte Axiome einsehen"):
+                        st.markdown("""
+                        **Axiom J-01 (Schutzauftrag § 8a):** `IF Indikator(Kindeswohlgefährdung) == True THEN OVERRIDE(Schweigepflicht) AND REQUIRE(Meldung_Jugendamt)`  
+                        *Priorisiert den aktiven Kinderschutz über Standard-Datenschutzvorgaben im Notfall.*
+                        
+                        **Axiom J-02 (Altersgrenzen):** `IF Alter(Klient) > 21 THEN REQUIRE(Sonderfallprüfung_SGB_VIII)`  
+                        *Löst automatische Prüfprozesse für Hilfe für junge Volljährige aus.*
+                        """)
+                    st.markdown('</div>', unsafe_allow_html=True)
 
                 st.markdown("<br>", unsafe_allow_html=True)
                 
                 # --- NEUER BEREICH: AKZEPTIERTE REGELN ---
-                with st.container(border=True):
-                    st.markdown('<div class="onto-titel"><span class="icon">playlist_add_check</span> Produktiv geschaltete Reasoner-Regeln</div>', unsafe_allow_html=True)
-                    st.markdown("Hier sehen Sie alle Axiome, die aus dem Vorschlagswesen administrativ in den aktiven Betrieb übernommen wurden.")
+                st.markdown('<div class="komm-card">', unsafe_allow_html=True)
+                st.markdown('<div class="onto-titel"><span class="icon">playlist_add_check</span> Produktiv geschaltete Reasoner-Regeln</div>', unsafe_allow_html=True)
+                st.markdown("Hier sehen Sie alle Axiome, die aus dem Vorschlagswesen administrativ in den aktiven Betrieb übernommen wurden.")
+                
+                # Alle Regeln zusammenführen
+                alle_regeln_gesamt = REGEL_KANDIDATEN + st.session_state.manuelle_regeln
+                # Nur die herausfiltern, die das grüne Licht haben
+                akzeptierte = [r for r in alle_regeln_gesamt if st.session_state.regel_status.get(r["id"]) == "akzeptiert"]
+                
+                if not akzeptierte:
+                    st.info("Aktuell wurden noch keine neuen Regeln in den produktiven Reasoner übernommen.")
+                else:
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    # Tabellen-Kopfzeile
+                    col_rtitel, col_rdatum = st.columns([3, 1])
+                    with col_rtitel:
+                        st.markdown("**Regeltitel / Axiom-Logik**")
+                    with col_rdatum:
+                        st.markdown("**Integration**")
+                        
+                    st.markdown("<hr style='margin: 0.5rem 0;'>", unsafe_allow_html=True)
                     
-                    # Alle Regeln zusammenführen
-                    alle_regeln_gesamt = REGEL_KANDIDATEN + st.session_state.manuelle_regeln
-                    # Nur die herausfiltern, die das grüne Licht haben
-                    akzeptierte = [r for r in alle_regeln_gesamt if st.session_state.regel_status.get(r["id"]) == "akzeptiert"]
-                    
-                    if not akzeptierte:
-                        st.info("Aktuell wurden noch keine neuen Regeln in den produktiven Reasoner übernommen.")
-                    else:
-                        st.markdown("<br>", unsafe_allow_html=True)
-                        # Tabellen-Kopfzeile
+                    # Wir drehen die Liste um (reversed), damit die zuletzt hinzugefügte Regel GANZ OBEN steht
+                    for regel in reversed(akzeptierte):
                         col_rtitel, col_rdatum = st.columns([3, 1])
                         with col_rtitel:
-                            st.markdown("**Regeltitel / Axiom-Logik**")
+                            st.markdown(f"**{regel['titel']}**")
+                            st.caption(f"{regel['beschreibung']}")
                         with col_rdatum:
-                            st.markdown("**Integration**")
-                            
-                        st.markdown("<hr style='margin: 0.5rem 0;'>", unsafe_allow_html=True)
+                            st.markdown('<span class="badge badge-ok"><span class="icon" style="font-size:14px;">bolt</span> Zuletzt hinzugefügt</span>', unsafe_allow_html=True)
                         
-                        # Wir drehen die Liste um (reversed), damit die zuletzt hinzugefügte Regel GANZ OBEN steht
-                        for regel in reversed(akzeptierte):
-                            col_rtitel, col_rdatum = st.columns([3, 1])
-                            with col_rtitel:
-                                st.markdown(f"**{regel['titel']}**")
-                                st.caption(f"{regel['beschreibung']}")
-                            with col_rdatum:
-                                st.markdown('<span class="badge badge-ok"><span class="icon" style="font-size:14px;">bolt</span> Zuletzt hinzugefügt</span>', unsafe_allow_html=True)
-                            
-                            st.markdown("<hr style='margin: 0.5rem 0;'>", unsafe_allow_html=True)
+                        st.markdown("<hr style='margin: 0.5rem 0;'>", unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
 
                 # --- HIER GEHEN DIE METRIKEN WIEDER WEITER ---
                 st.markdown("---")
@@ -1072,7 +1070,6 @@ else:
                     st.markdown("Stand der Revision: **07.07.2026**")
 
 
-            # --- TAB: REGELERKENNUNG ---
             # --- TAB: REGELERKENNUNG ---
             with tab_regeln:
                 st.markdown("<br>", unsafe_allow_html=True)
@@ -1087,43 +1084,44 @@ else:
                     st.session_state.manuelle_regeln = []
 
                 # 2. Das neue Eingabe-Formular für Ontologie-Regeln
-                with st.container(border=True):
-                    st.markdown('<div class="onto-titel"><span class="icon">schema</span> Neue Ontologie-Regel erstellen</div>', unsafe_allow_html=True)
-                    st.markdown("Definieren Sie hier manuell neue semantische Zusammenhänge (Wenn-Dann-Abfolgen).")
+                st.markdown('<div class="komm-card">', unsafe_allow_html=True)
+                st.markdown('<div class="onto-titel"><span class="icon">schema</span> Neue Ontologie-Regel erstellen</div>', unsafe_allow_html=True)
+                st.markdown("Definieren Sie hier manuell neue semantische Zusammenhänge (Wenn-Dann-Abfolgen).")
+                
+                with st.form("axiom_form", clear_on_submit=True):
+                    regel_titel = st.text_input("Titel der Regel", placeholder="z.B. Abrechnungsregel Sonderfall")
                     
-                    with st.form("axiom_form", clear_on_submit=True):
-                        regel_titel = st.text_input("Titel der Regel", placeholder="z.B. Abrechnungsregel Sonderfall")
+                    col_w, col_b, col_d = st.columns(3)
+                    with col_w:
+                        entitaet = st.text_input("Wenn (Entität)", placeholder="z.B. Pflegegrad")
+                    with col_b:
+                        beziehung = st.text_input("Beziehung", placeholder="z.B. ist gleich (=) 1")
+                    with col_d:
+                        objekt = st.text_input("Dann (Objekt / Aktion)", placeholder="z.B. greift Entlastungsbetrag")
                         
-                        col_w, col_b, col_d = st.columns(3)
-                        with col_w:
-                            entitaet = st.text_input("Wenn (Entität)", placeholder="z.B. Pflegegrad")
-                        with col_b:
-                            beziehung = st.text_input("Beziehung", placeholder="z.B. ist gleich (=) 1")
-                        with col_d:
-                            objekt = st.text_input("Dann (Objekt / Aktion)", placeholder="z.B. greift Entlastungsbetrag")
+                    submit_axiom = st.form_submit_button("Regel generieren", icon=":material/add_task:")
+                    
+                    if submit_axiom:
+                        # Validierung, ob alle Felder gefüllt sind
+                        if regel_titel.strip() and entitaet.strip() and beziehung.strip() and objekt.strip():
+                            # Generiere eine neue ID ab 100, um Überschneidungen mit den Mock-Daten zu vermeiden
+                            neue_id = 100 + len(st.session_state.manuelle_regeln)
+                            neue_regel = {
+                                "id": neue_id,
+                                "titel": regel_titel.strip(),
+                                "beschreibung": f"Wenn {entitaet.strip()} {beziehung.strip()}, dann {objekt.strip()}.",
+                                "haeufigkeit": "Manuell erstellt"
+                            }
+                            # In den State pushen
+                            st.session_state.manuelle_regeln.append(neue_regel)
+                            # Den Status-Tracker für diese neue ID initialisieren (auf "Ungeprüft" setzen)
+                            st.session_state.regel_status[neue_id] = None 
                             
-                        submit_axiom = st.form_submit_button("Regel generieren", icon=":material/add_task:")
-                        
-                        if submit_axiom:
-                            # Validierung, ob alle Felder gefüllt sind
-                            if regel_titel.strip() and entitaet.strip() and beziehung.strip() and objekt.strip():
-                                # Generiere eine neue ID ab 100, um Überschneidungen mit den Mock-Daten zu vermeiden
-                                neue_id = 100 + len(st.session_state.manuelle_regeln)
-                                neue_regel = {
-                                    "id": neue_id,
-                                    "titel": regel_titel.strip(),
-                                    "beschreibung": f"Wenn {entitaet.strip()} {beziehung.strip()}, dann {objekt.strip()}.",
-                                    "haeufigkeit": "Manuell erstellt"
-                                }
-                                # In den State pushen
-                                st.session_state.manuelle_regeln.append(neue_regel)
-                                # Den Status-Tracker für diese neue ID initialisieren (auf "Ungeprüft" setzen)
-                                st.session_state.regel_status[neue_id] = None 
-                                
-                                st.success("Neue Regel erfolgreich zur Liste hinzugefügt.")
-                                st.rerun() # Oberfläche sofort aktualisieren
-                            else:
-                                st.error("Bitte füllen Sie alle vier Felder aus, um die Regel zu generieren.", icon=":material/warning:")
+                            st.success("Neue Regel erfolgreich zur Liste hinzugefügt.")
+                            st.rerun() # Oberfläche sofort aktualisieren
+                        else:
+                            st.error("Bitte füllen Sie alle vier Felder aus, um die Regel zu generieren.", icon=":material/warning:")
+                st.markdown('</div>', unsafe_allow_html=True)
                 
                 st.markdown("---")
 
@@ -1135,38 +1133,39 @@ else:
                     rid = regel["id"]
                     status = st.session_state.regel_status[rid]
 
-                    with st.container(border=True):
-                        col_info, col_btn = st.columns([4, 1.5])
+                    st.markdown('<div class="komm-card">', unsafe_allow_html=True)
+                    col_info, col_btn = st.columns([4, 1.5])
 
-                        with col_info:
-                            st.markdown(f"**{regel['titel']}**")
-                            st.markdown(regel["beschreibung"])
-                            
-                            # Kleine Unterscheidung im Text: KI-Vorschlag vs. Manueller Admin-Eintrag
-                            if "Manuell" in str(regel['haeufigkeit']):
-                                st.caption("Evidenz: Manuell durch Administrator erstellt")
-                            else:
-                                st.caption(f"Statistische Evidenz: Abgeleitet aus {regel['haeufigkeit']} Interaktionen")
+                    with col_info:
+                        st.markdown(f"**{regel['titel']}**")
+                        st.markdown(regel["beschreibung"])
+                        
+                        # Kleine Unterscheidung im Text: KI-Vorschlag vs. Manueller Admin-Eintrag
+                        if "Manuell" in str(regel['haeufigkeit']):
+                            st.caption("Evidenz: Manuell durch Administrator erstellt")
+                        else:
+                            st.caption(f"Statistische Evidenz: Abgeleitet aus {regel['haeufigkeit']} Interaktionen")
 
-                            if status == "akzeptiert":
-                                st.markdown('<span class="badge badge-ok"><span class="icon" style="font-size:14px;">check</span> Freigegeben</span>', unsafe_allow_html=True)
-                            elif status == "abgelehnt":
-                                st.markdown('<span class="badge badge-nein"><span class="icon" style="font-size:14px;">close</span> Verworfen</span>', unsafe_allow_html=True)
+                        if status == "akzeptiert":
+                            st.markdown('<span class="badge badge-ok"><span class="icon" style="font-size:14px;">check</span> Freigegeben</span>', unsafe_allow_html=True)
+                        elif status == "abgelehnt":
+                            st.markdown('<span class="badge badge-nein"><span class="icon" style="font-size:14px;">close</span> Verworfen</span>', unsafe_allow_html=True)
 
-                        with col_btn:
-                            if status is None:
-                                if st.button("Axiom freigeben", key=f"akz_{rid}", icon=":material/check:", use_container_width=True):
-                                    st.session_state.regel_status[rid] = "akzeptiert"
-                                    st.rerun()
-                                st.markdown("<br>", unsafe_allow_html=True)
-                                if st.button("Axiom verwerfen", key=f"abl_{rid}", icon=":material/close:", use_container_width=True):
-                                    st.session_state.regel_status[rid] = "abgelehnt"
-                                    st.rerun()
-                            else:
-                                st.markdown("**Status: Geprüft**")
+                    with col_btn:
+                        if status is None:
+                            if st.button("Axiom freigeben", key=f"akz_{rid}", icon=":material/check:", use_container_width=True):
+                                st.session_state.regel_status[rid] = "akzeptiert"
+                                st.rerun()
+                            st.markdown("<br>", unsafe_allow_html=True)
+                            if st.button("Axiom verwerfen", key=f"abl_{rid}", icon=":material/close:", use_container_width=True):
+                                st.session_state.regel_status[rid] = "abgelehnt"  # <-- HIER KORRIGIERT
+                                st.rerun()
+                        else:
+                            st.markdown("**Status: Geprüft**")
+                    st.markdown('</div>', unsafe_allow_html=True)
 
 
-            # --- TAB: TICKET-VERWALTUNG ---
+            # --- TAB: TICKET-VERWALTUNG (ADMIN BEREICH) ---
             with tab_ticket_admin:
                 st.markdown("<br>", unsafe_allow_html=True)
                 st.markdown(
@@ -1179,43 +1178,37 @@ else:
                     st.info("Das Ticket-System verzeichnet aktuell keine offenen Vorgänge.")
                 else:
                     for tk in reversed(st.session_state.tickets):
-                        with st.container(border=True):
-                            col_t1, col_t2 = st.columns([3, 1])
-                            
-                            with col_t1:
-                                st.markdown(f"**Vorgang #{tk['id']} | {tk['titel']}**")
-                                st.markdown(f"{tk['beschreibung']}")
-                                st.caption(f"Gemeldet von: {tk['ersteller']}")
+                        st.markdown('<div class="komm-card">', unsafe_allow_html=True)
+                        col_t1, col_t2 = st.columns([3, 1.2])
+                        
+                        with col_t1:
+                            st.markdown(f"**Vorgang #{tk['id']} | {tk['titel']}**")
+                            st.markdown(f"{tk['beschreibung']}")
+                            st.caption(f"Gemeldet von: {tk['ersteller']}")
 
-                                # Konsistente Benennung passend zum Dropdown-Menü
-                                if tk['status'] == "Offen":
-                                    badge_html = '<span class="badge badge-nein">STATUS: OFFEN</span>'
-                                elif tk['status'] == "In Bearbeitung":
-                                    badge_html = '<span class="badge badge-neutral">STATUS: IN BEARBEITUNG</span>'
-                                else:
-                                    badge_html = '<span class="badge badge-ok">STATUS: GESCHLOSSEN</span>'
-                                    
-                                st.markdown(badge_html, unsafe_allow_html=True)
-
-                            with col_t2:
-                                box_key = f"status_select_{tk['id']}"
-                                status_optionen = ["Offen", "In Bearbeitung", "Geschlossen"]
+                            if tk['status'] == "Offen":
+                                badge_html = '<span class="badge badge-nein">STATUS: OFFEN</span>'
+                            elif tk['status'] == "In Bearbeitung":
+                                badge_html = '<span class="badge badge-neutral">STATUS: IN BEARBEITUNG</span>'
+                            else:
+                                badge_html = '<span class="badge badge-ok">STATUS: GESCHLOSSEN</span>'
                                 
-                                # Reines Widget ohne on_change-Callback (verhindert den React-Crash)
+                            st.markdown(badge_html, unsafe_allow_html=True)
+
+                        with col_t2:
+                            # Komplett stabiles Inline-Formular: Verhindert jeglichen React-Tab-Absturz in der Cloud!
+                            with st.form(key=f"status_form_{tk['id']}", clear_on_submit=False):
+                                status_optionen = ["Offen", "In Bearbeitung", "Geschlossen"]
                                 auswahl = st.selectbox(
                                     "Vorgangsstatus",
                                     options=status_optionen,
                                     index=status_optionen.index(tk['status']),
-                                    key=box_key,
                                     label_visibility="collapsed"
                                 )
-                                
-                                # Direkte Überprüfung: Wenn sich der Wert ändert, direkt updaten und neuladen
-                                if auswahl != tk['status']:
+                                if st.form_submit_button("Speichern", use_container_width=True):
                                     tk['status'] = auswahl
                                     st.rerun()
-   
-    
+                        st.markdown('</div>', unsafe_allow_html=True)
 
 
             # --- TAB: METRIKEN ---
@@ -1230,21 +1223,25 @@ else:
                 m1, m2, m3, m4 = st.columns(4)
 
                 with m1:
-                    with st.container(border=True):
-                        st.markdown(f'<div class="metrik-wert" style="text-align: center;">{METRIKEN["serverauslastung_pct"]} %</div>', unsafe_allow_html=True)
-                        st.markdown('<div class="metrik-label" style="text-align: center;"><span class="icon" style="font-size:16px;">dns</span> Infrastrukturlast</div>', unsafe_allow_html=True)
+                    st.markdown('<div class="komm-card">', unsafe_allow_html=True)
+                    st.markdown(f'<div class="metrik-wert" style="text-align: center;">{METRIKEN["serverauslastung_pct"]} %</div>', unsafe_allow_html=True)
+                    st.markdown('<div class="metrik-label" style="text-align: center;"><span class="icon" style="font-size:16px;">dns</span> Infrastrukturlast</div>', unsafe_allow_html=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
                 with m2:
-                    with st.container(border=True):
-                        st.markdown(f'<div class="metrik-wert" style="text-align: center;">{METRIKEN["antwortlatenz_ms"]} ms</div>', unsafe_allow_html=True)
-                        st.markdown('<div class="metrik-label" style="text-align: center;"><span class="icon" style="font-size:16px;">timer</span> Ø Inferenzzeit</div>', unsafe_allow_html=True)
+                    st.markdown('<div class="komm-card">', unsafe_allow_html=True)
+                    st.markdown(f'<div class="metrik-wert" style="text-align: center;">{METRIKEN["antwortlatenz_ms"]} ms</div>', unsafe_allow_html=True)
+                    st.markdown('<div class="metrik-label" style="text-align: center;"><span class="icon" style="font-size:16px;">timer</span> Ø Inferenzzeit</div>', unsafe_allow_html=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
                 with m3:
-                    with st.container(border=True):
-                        st.markdown(f'<div class="metrik-wert" style="text-align: center;">{METRIKEN["maskierte_pii"]:,}</div>'.replace(",", "."), unsafe_allow_html=True)
-                        st.markdown('<div class="metrik-label" style="text-align: center;"><span class="icon" style="font-size:16px;">policy</span> Gefilterte PII</div>', unsafe_allow_html=True)
+                    st.markdown('<div class="komm-card">', unsafe_allow_html=True)
+                    st.markdown(f'<div class="metrik-wert" style="text-align: center;">{METRIKEN["maskierte_pii"]:,}</div>'.replace(",", "."), unsafe_allow_html=True)
+                    st.markdown('<div class="metrik-label" style="text-align: center;"><span class="icon" style="font-size:16px;">policy</span> Gefilterte PII</div>', unsafe_allow_html=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
                 with m4:
-                    with st.container(border=True):
-                        st.markdown(f'<div class="metrik-wert" style="text-align: center;">{METRIKEN["anfragen_heute"]}</div>', unsafe_allow_html=True)
-                        st.markdown('<div class="metrik-label" style="text-align: center;"><span class="icon" style="font-size:16px;">forum</span> Anfragen heute</div>', unsafe_allow_html=True)
+                    st.markdown('<div class="komm-card">', unsafe_allow_html=True)
+                    st.markdown(f'<div class="metrik-wert" style="text-align: center;">{METRIKEN["anfragen_heute"]}</div>', unsafe_allow_html=True)
+                    st.markdown('<div class="metrik-label" style="text-align: center;"><span class="icon" style="font-size:16px;">forum</span> Anfragen heute</div>', unsafe_allow_html=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
 
                 st.markdown("---")
 
@@ -1265,8 +1262,9 @@ else:
                     st.info("Aktuell liegen keine manuellen Nutzer-Evaluationen vor.")
                 else:
                     for fbt in reversed(st.session_state.eingereichtes_feedback):
-                        with st.container(border=True):
-                            st.markdown(f'<span class="icon" style="color:var(--text-grau); margin-right:8px; vertical-align: middle;">chat_bubble</span> {fbt}', unsafe_allow_html=True)
+                        st.markdown('<div class="komm-card">', unsafe_allow_html=True)
+                        st.markdown(f'<span class="icon" style="color:var(--text-grau); margin-right:8px; vertical-align: middle;">chat_bubble</span> {fbt}', unsafe_allow_html=True)
+                        st.markdown('</div>', unsafe_allow_html=True)
 
 
     # -----------------------------------------------------------------------
@@ -1320,28 +1318,29 @@ else:
             )
 
         with col_panel:
-            with st.container(border=True):
-                st.markdown('<div class="onto-titel"><span class="icon">neurology</span> WMS Systemassistenz</div>', unsafe_allow_html=True)
+            st.markdown('<div class="komm-card">', unsafe_allow_html=True)
+            st.markdown('<div class="onto-titel"><span class="icon">neurology</span> WMS Systemassistenz</div>', unsafe_allow_html=True)
 
-                st.markdown("**Extrahierte Parameter:**")
-                st.markdown("- Pflegegrad 2  \n- Grundpflege  \n- Medikamentengabe")
+            st.markdown("**Extrahierte Parameter:**")
+            st.markdown("- Pflegegrad 2  \n- Grundpflege  \n- Medikamentengabe")
 
-                st.markdown("---")
+            st.markdown("---")
 
-                st.markdown("**Korrelierte Richtlinien:**")
-                st.markdown(
-                    "1. Abrechnungsregeln Pflegegrad 2 (§ 36 SGB XI)  \n"
-                    "2. Dokumentationsstandards MDK  \n"
-                    "3. Protokollierungspflicht Medikamente"
-                )
+            st.markdown("**Korrelierte Richtlinien:**")
+            st.markdown(
+                "1. Abrechnungsregeln Pflegegrad 2 (§ 36 SGB XI)  \n"
+                "2. Dokumentationsstandards MDK  \n"
+                "3. Protokollierungspflicht Medikamente"
+            )
 
-                st.markdown("---")
+            st.markdown("---")
 
-                if st.button("Richtlinie einsehen", icon=":material/visibility:", use_container_width=True):
-                    st.info("Der direkte Dokumenten-Abruf ist in der Sandbox-Umgebung deaktiviert.")
+            if st.button("Richtlinie einsehen", icon=":material/visibility:", use_container_width=True):
+                st.info("Der direkte Dokumenten-Abruf ist in der Sandbox-Umgebung deaktiviert.")
 
-                if st.button("Compliance-Scan ausführen", icon=":material/fact_check:", use_container_width=True):
-                    st.info("Das Compliance-Modul benötigt die Freischaltung der REST-Schnittstellen.")
+            if st.button("Compliance-Scan ausführen", icon=":material/fact_check:", use_container_width=True):
+                st.info("Das Compliance-Modul benötigt die Freischaltung der REST-Schnittstellen.")
 
-                st.markdown("---")
-                st.caption("Verbindungsstatus: API Offline (Simulation)")
+            st.markdown("---")
+            st.caption("Verbindungsstatus: API Offline (Simulation)")
+            st.markdown('</div>', unsafe_allow_html=True)
