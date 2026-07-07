@@ -1,7 +1,7 @@
 # =============================================================================
 # app.py – KOMM Ambulante Dienste e.V. | Wissensmanagementsystem (WMS)
 # Prototyp (Proof of Concept) – Vollständig gemockt (In-Memory)
-# Finaler Stand: Absolut Cloud-stabil & Fixiertes Dropdown-Verhalten
+# Finaler Stand: Native Streamlit-Container & Stabile Callbacks
 # =============================================================================
 # Ausführung: streamlit run app.py
 # Abhängigkeiten: streamlit (pip install streamlit)
@@ -33,14 +33,19 @@ LOGO_BASE64 = get_image_base64("Komm.png")
 
 
 # =============================================================================
-# ABSCHNITT 1: CORPORATE DESIGN & CSS (Isoliert für maximale Cloud-Stabilität)
+# ABSCHNITT 1: CORPORATE DESIGN & CSS
 # =============================================================================
-st.html("""
+st.markdown("""
 <style>
     /* Google Material Symbols (Rounded) importieren für professionelle Piktogramme */
     @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0');
 
-    /* Globale Farbvariablen */
+    /* Globale Schriftart sanfter setzen, ohne die Icons pauschal zu oversaturieren */
+    html, body, p, h1, h2, h3, h4, h5, h6, label, .markdown-text-container {
+        font-family: "San Francisco", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    }
+
+    /* Globale UI Variablen */
     :root {
         --komm-gruen: #12734a;
         --komm-gruen-hover: #0e5c3a;
@@ -54,7 +59,7 @@ st.html("""
         --schatten-gruen: 0 4px 15px rgba(18, 115, 74, 0.15);
     }
 
-    /* Piktogramm-Klasse für eigene HTML-Elemente */
+    /* Piktogramm-Klasse für eigene HTML-Elemente explizit schützen */
     .icon {
         font-family: 'Material Symbols Rounded' !important;
         font-weight: normal;
@@ -71,10 +76,38 @@ st.html("""
         -webkit-font-smoothing: antialiased;
     }
 
-    /* Minimal-invasive Button-Abrundung */
+    /* Modernisierte Schaltflächen (global) */
     .stButton > button, .stFormSubmitButton > button {
-        border-radius: var(--radius-klein) !important;
-        font-weight: 600 !important;
+        background: linear-gradient(135deg, var(--komm-gruen), #1a9660);
+        color: #ffffff;
+        border: none;
+        border-radius: var(--radius-klein);
+        padding: 0.5rem 1.2rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+        box-shadow: var(--schatten-gruen);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .stButton > button:hover, .stFormSubmitButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(18, 115, 74, 0.25);
+    }
+    
+    /* Sekundäre Buttons (z.B. Logout, Zurück, Inaktiver Status) */
+    .btn-sekundaer > button {
+        background: #ffffff !important;
+        color: var(--text-dunkel) !important;
+        border: 1px solid #e0e0e0 !important;
+        box-shadow: none !important;
+    }
+    .btn-sekundaer > button:hover {
+        background: #f8f9fa !important;
+        border-color: #d0d0d0 !important;
+        box-shadow: var(--schatten-weich) !important;
     }
 
     /* Header-Leiste */
@@ -241,6 +274,19 @@ st.html("""
         gap: 12px;
     }
 
+    /* Native Container Styling */
+    [data-testid="stContainer"] {
+        border-radius: var(--radius-klein) !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        background-color: #ffffff !important;
+        box-shadow: var(--schatten-weich) !important;
+    }
+    [data-testid="stContainer"]:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 24px rgba(18, 115, 74, 0.12) !important;
+        border-color: rgba(18, 115, 74, 0.3) !important;
+    }
+
     .onto-titel {
         font-size: 1.1rem;
         font-weight: 700;
@@ -271,11 +317,25 @@ st.html("""
     .metrik-wert { font-size: 2rem; font-weight: 800; color: var(--komm-gruen); margin-bottom: 0.2rem; }
     .metrik-label { font-size: 0.85rem; color: var(--text-grau); font-weight: 600; text-transform: uppercase; }
 
+    /* Tabs Styling */
+    .stTabs [data-baseweb="tab-list"] { gap: 16px; border-bottom: 2px solid #eaeaea; }
+    .stTabs [data-baseweb="tab"] {
+        background-color: transparent;
+        color: var(--text-grau);
+        font-weight: 600;
+        font-size: 0.95rem;
+        padding: 12px 16px;
+        border: none;
+    }
+    .stTabs [aria-selected="true"] {
+        color: var(--komm-gruen) !important;
+        border-bottom: 3px solid var(--komm-gruen) !important;
+    }
+
     /* Profile Subpage Styles */
     .profil-header-label { font-size: 0.8rem; text-transform: uppercase; color: var(--text-grau); letter-spacing: 0.05em; margin-bottom: 0.2rem;}
     .profil-header-wert { font-size: 1.1rem; font-weight: 600; color: var(--text-dunkel); margin-bottom: 1.2rem;}
 
-    /* Verblassende Trennlinien */
     hr { 
         border: 0 !important; 
         height: 1px !important; 
@@ -283,7 +343,7 @@ st.html("""
         margin: 2rem 0 !important; 
     }
     
-    /* ONTOLOGIE-REFERENZEN (INLINE TOOLTIPS) */
+    /* Tooltips */
     .onto-ref {
         display: inline-flex;
         align-items: center;
@@ -300,6 +360,7 @@ st.html("""
         position: relative;
         vertical-align: super;
         box-shadow: 0 2px 4px rgba(18, 115, 74, 0.1);
+        transition: background-color 0.2s;
     }
     .onto-ref:hover, .onto-ref:active {
         background-color: var(--komm-gruen);
@@ -342,7 +403,7 @@ st.html("""
         transform: translateX(-50%) translateY(0);
     }
 </style>
-""")
+""", unsafe_allow_html=True)
 
 
 # =============================================================================
@@ -356,7 +417,7 @@ BEISPIELFRAGEN = {
             "Pflegegrad 1 berechtigt zur Inanspruchnahme des Entlastungsbetrages "
             "gemäß § 45b SGB XI in Höhe von 125 Euro monatlich. "
             "<span class='onto-ref'>1<span class='tooltiptext'><strong>📌 Abrechnungsregel Pflegegrad 1</strong><br>Ontologie erzwang Verweis auf § 45b SGB XI. Sachleistungen wurden logisch ausgeschlossen.</span></span> "
-            "Eine Anerkennung als Pflegeleistung im Sinne der Sachleistungsvergabe (§ 36 SGB XI) ist "
+            "Eine Anerkennung als Pflegeleistung im Sinne der Sachleistungsvergabe (§ 36 SGB XI) is "
             "bei Pflegegrad 1 nicht möglich. Die Abrechnung erfolgt ausschließlich "
             "über den Entlastungsbetrag direkt mit die Pflegekasse. Interne "
             "Abrechnungsfrist: bis zum 5. des Folgemonats. "
@@ -427,7 +488,7 @@ METRIKEN = {
 
 
 # =============================================================================
-# ABSCHNITT 3: SESSION STATE INITIALISIERUNG & SAFE CALLBACK
+# ABSCHNITT 3: SESSION STATE INITIALISIERUNG & ZUWEISUNGS-FUNKTION
 # =============================================================================
 def init_session():
     defaults = {
@@ -457,12 +518,12 @@ def init_session():
 
 init_session()
 
-def sichere_ticket_status_direkt(ticket_id, selectbox_key):
-    if "tickets" in st.session_state:
-        for tk in st.session_state.tickets:
-            if tk['id'] == ticket_id:
-                tk['status'] = st.session_state[selectbox_key]
-                break
+def set_ticket_status(ticket_id, neuer_status):
+    """Ändert den Status eines Tickets direkt im Session State."""
+    for tk in st.session_state.tickets:
+        if tk['id'] == ticket_id:
+            tk['status'] = neuer_status
+            break
 
 
 # =============================================================================
@@ -559,29 +620,50 @@ with st.sidebar:
 
     st.markdown("<div style='margin-bottom: 0.5rem;'></div>", unsafe_allow_html=True)
 
+    st.markdown('<div class="btn-sekundaer">', unsafe_allow_html=True)
     if st.button("Sitzung beenden", icon=":material/logout:", use_container_width=True):
         st.session_state.eingeloggt = False
         st.session_state.benutzername = ""
         st.session_state.rolle = ""
         st.session_state.aktuelle_seite = "main"
         st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
     
     st.divider()
 
+    # --- GEÄNDERT: Schnittstellen-Modus über stabile Buttons und Textfeld ---
     if st.session_state.aktuelle_seite == "main":
         st.markdown("**Schnittstellen-Modus**")
         
-        # FIX: Direkte State-Bindung über `key="modus"`. 
-        # Keine asynchronen Zwischen-Variablen mehr, die ein Collapsing triggern!
-        st.selectbox(
-            "Aktiver Modus",
-            options=["Web UI Chat Interface", "Dokumenten-Integration (Office Plugin)"],
-            key="modus",
-            label_visibility="collapsed"
-        )
+        # Schreibgeschütztes Textfeld zeigt den aktuellen Zustand
+        st.text_input("Aktiver Modus:", value=st.session_state.modus, disabled=True, key="wms_aktiv_modus_txt")
+        st.markdown("<div style='margin-bottom: 0.4rem;'></div>", unsafe_allow_html=True)
+        
+        # Button 1: Web UI Chat Interface
+        if st.session_state.modus == "Web UI Chat Interface":
+            if st.button("Web UI Chat Interface", icon=":material/forum:", use_container_width=True):
+                pass
+        else:
+            st.markdown('<div class="btn-sekundaer">', unsafe_allow_html=True)
+            if st.button("Web UI Chat Interface", icon=":material/forum:", use_container_width=True):
+                st.session_state.modus = "Web UI Chat Interface"
+                st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        # Button 2: Dokumenten-Integration
+        if st.session_state.modus == "Dokumenten-Integration (Office Plugin)":
+            if st.button("Dokumenten-Integration", icon=":material/description:", use_container_width=True):
+                pass
+        else:
+            st.markdown('<div class="btn-sekundaer">', unsafe_allow_html=True)
+            if st.button("Dokumenten-Integration", icon=":material/description:", use_container_width=True):
+                st.session_state.modus = "Dokumenten-Integration (Office Plugin)"
+                st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
+
         st.divider()
 
-    st.caption("Version 1.2.0 — Cloud Stable")
+    st.caption("Version 1.2.0 — Modern UI Edition")
     st.caption("Stand: 2026")
 
 
@@ -600,6 +682,9 @@ st.markdown(
 # ABSCHNITT 7: ROUTING (Profil oder WMS)
 # =============================================================================
 
+# -----------------------------------------------------------------------
+# UNTERSEITE: BENUTZERPROFIL
+# -----------------------------------------------------------------------
 if st.session_state.aktuelle_seite == "profil":
     st.markdown("### :material/manage_accounts: Benutzerprofil & Einstellungen")
     st.markdown(
@@ -608,9 +693,11 @@ if st.session_state.aktuelle_seite == "profil":
         "</p>", unsafe_allow_html=True
     )
     
-    if st.button("Zurück zum WMS Dashboard", icon=":material/arrow_back:"):
+    st.markdown('<div class="btn-sekundaer" style="max-width: 300px;">', unsafe_allow_html=True)
+    if st.button("Zurück zum WMS Dashboard", icon=":material/arrow_back:", use_container_width=True):
         st.session_state.aktuelle_seite = "main"
         st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
     
     st.markdown("---")
 
@@ -639,12 +726,14 @@ if st.session_state.aktuelle_seite == "profil":
             st.markdown('<div class="profil-header-label">Letzter Login</div>', unsafe_allow_html=True)
             st.markdown('<div class="profil-header-wert">Heute, 08:14 Uhr (IP: 192.168.10.45)</div>', unsafe_allow_html=True)
 
+# -----------------------------------------------------------------------
+# HAUPTSEITE: WMS ANWENDUNG
+# -----------------------------------------------------------------------
 else:
     if st.session_state.modus == "Web UI Chat Interface":
-        ist_admin = (st.session_state.rolle == "Administrator")
 
-        # ULTIMATIVE RETTUNG: Explizite Vergabe von statischen Keys für st.tabs.
-        # Damit weiß das React-DOM im Browser bei JEDEM Dropdown-Wechsel exakt, welcher Tab aktiv ist.
+        ist_admin = st.session_state.rolle == "Administrator"
+
         if ist_admin:
             tab_chat, tab_ticket, tab_onto, tab_regeln, tab_ticket_admin, tab_metriken = st.tabs([
                 ":material/forum: Wissensabfrage",
@@ -653,14 +742,14 @@ else:
                 ":material/rule: Regelerkennung",
                 ":material/confirmation_number: Tickets",
                 ":material/analytics: Metriken",
-            ], key="komm_wms_admin_tabs")
+            ])
         else:
             tab_chat, tab_ticket = st.tabs([
                 ":material/forum: Wissensabfrage", 
                 ":material/support_agent: Support"
-            ], key="komm_wms_user_tabs")
+            ])
 
-        # --- TAB: WISSENSABFRAGE ---
+        # --- TAB: WISSENSABFRAGE (Chat-Interface) ---
         with tab_chat:
             st.markdown("<br>", unsafe_allow_html=True)
             st.markdown(
@@ -779,13 +868,13 @@ else:
                 st.session_state.ki_modus = neuer_ki_modus
                 
                 if "Eco" in st.session_state.ki_modus:
-                    warp = 1.0 
+                    wartezeit = 1.0 
                     lade_text = '<span class="icon">energy_savings_leaf</span> Eco-Modus aktiv: Schnelle Verarbeitung läuft ...'
                 elif "Deep-Thinking" in st.session_state.ki_modus:
-                    warp = 3.5
+                    wartezeit = 3.5
                     lade_text = '<span class="icon">psychology</span> Analytischer Modus: Tiefgreifende SGB-Prüfung läuft ...'
                 else:
-                    warp = 2.0
+                    wartezeit = 2.0
                     lade_text = '<span class="icon">memory</span> Neuro-Symbolische Verarbeitung läuft ...'
 
                 lade_platzhalter = st.empty()
@@ -796,7 +885,7 @@ else:
                 </div>
                 """, unsafe_allow_html=True)
                 
-                time.sleep(warp)
+                time.sleep(wartezeit)
                 lade_platzhalter.empty()
 
                 eintrag = {
@@ -859,7 +948,7 @@ else:
                         st.markdown('<div class="onto-titel"><span class="icon">elderly</span> Domäne: Pflege</div>', unsafe_allow_html=True)
                         st.markdown("""
 **SGB XI – Pflegeleistungen**
-- Pflegegrade 1 bis 5
+- Pflegegrades 1 bis 5
 - Sachleistungen (§ 36)
 - Entlastungsbetrag (§ 45b)
 - Verhinderungspflege (§ 39)
@@ -930,7 +1019,7 @@ else:
                 
                 with st.container(border=True):
                     st.markdown('<div class="onto-titel"><span class="icon">playlist_add_check</span> Produktiv geschaltete Reasoner-Regeln</div>', unsafe_allow_html=True)
-                    st.markdown("Hier sehen Sie alle Axiome, die aus dem Vorschlagswesen administrativ in den active Betrieb übernommen wurden.")
+                    st.markdown("Hier sehen Sie alle Axiome, die aus dem Vorschlagswesen administrativ in den aktiven Betrieb übernommen wurden.")
                     
                     alle_regeln_gesamt = REGEL_KANDIDATEN + st.session_state.manuelle_regeln
                     akzeptierte = [r for r in alle_regeln_gesamt if st.session_state.regel_status.get(r["id"]) == "akzeptiert"]
@@ -951,8 +1040,7 @@ else:
                             col_rtitel, col_rdatum = st.columns([3, 1])
                             with col_rtitel:
                                 st.markdown(f"**{regel['titel']}**")
-                                LOGIC_DESC = regel['beschreibung']
-                                st.caption(f"{LOGIC_DESC}")
+                                st.caption(f"{regel['beschreibung']}")
                             with col_rdatum:
                                 st.markdown('<span class="badge badge-ok"><span class="icon" style="font-size:14px;">bolt</span> Zuletzt hinzugefügt</span>', unsafe_allow_html=True)
                             
@@ -1066,7 +1154,6 @@ else:
                     st.info("Das Ticket-System verzeichnet aktuell keine offenen Vorgänge.")
                 else:
                     for tk in reversed(st.session_state.tickets):
-                        auswahl_key = f"select_{tk['id']}"
                         
                         with st.container(border=True):
                             col_t1, col_t2 = st.columns([3, 1.2])
@@ -1076,6 +1163,7 @@ else:
                                 st.markdown(f"{tk['beschreibung']}")
                                 st.caption(f"Gemeldet von: {tk['ersteller']}")
 
+                                # Dynamische Status-Badges, passen sich synchron an
                                 if tk['status'] == "Offen":
                                     st.markdown('<span class="badge badge-nein">📋 STATUS: OFFEN</span>', unsafe_allow_html=True)
                                 elif tk['status'] == "In Bearbeitung":
@@ -1083,19 +1171,39 @@ else:
                                 else:
                                     st.markdown('<span class="badge badge-ok">✅ STATUS: GESCHLOSSEN</span>', unsafe_allow_html=True)
 
+                            # --- GEÄNDERT: Statusänderung nativ via 3 Buttons statt Selectbox ---
                             with col_t2:
-                                status_optionen = ["Offen", "In Bearbeitung", "Geschlossen"]
+                                st.markdown("<p style='font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;'>Status ändern:</p>", unsafe_allow_html=True)
                                 
-                                # SICHERER INTERAKTIONS-FLOW: Wir nutzen den legalen `on_change` Callback.
-                                # Streamlit wickelt die Änderung reaktiv ab, ohne die Tabs kollabieren zu lassen.
-                                st.selectbox(
-                                    "Status direkt ändern:",
-                                    options=status_optionen,
-                                    index=status_optionen.index(tk['status']),
-                                    key=auswahl_key,
-                                    on_change=sichere_ticket_status_direkt,
-                                    args=(tk['id'], auswahl_key)
-                                )
+                                # 1. Button: Offen
+                                if tk['status'] == "Offen":
+                                    st.button("Offen", key=f"btn_stat_offen_{tk['id']}", use_container_width=True)
+                                else:
+                                    st.markdown('<div class="btn-sekundaer">', unsafe_allow_html=True)
+                                    if st.button("Offen", key=f"btn_stat_offen_{tk['id']}", use_container_width=True):
+                                        set_ticket_status(tk['id'], "Offen")
+                                        st.rerun()
+                                    st.markdown('</div>', unsafe_allow_html=True)
+                                    
+                                # 2. Button: In Bearbeitung
+                                if tk['status'] == "In Bearbeitung":
+                                    st.button("In Bearbeitung", key=f"btn_stat_ib_{tk['id']}", use_container_width=True)
+                                else:
+                                    st.markdown('<div class="btn-sekundaer">', unsafe_allow_html=True)
+                                    if st.button("In Bearbeitung", key=f"btn_stat_ib_{tk['id']}", use_container_width=True):
+                                        set_ticket_status(tk['id'], "In Bearbeitung")
+                                        st.rerun()
+                                    st.markdown('</div>', unsafe_allow_html=True)
+                                    
+                                # 3. Button: Geschlossen
+                                if tk['status'] == "Geschlossen":
+                                    st.button("Geschlossen", key=f"btn_stat_ges_{tk['id']}", use_container_width=True)
+                                else:
+                                    st.markdown('<div class="btn-sekundaer">', unsafe_allow_html=True)
+                                    if st.button("Geschlossen", key=f"btn_stat_ges_{tk['id']}", use_container_width=True):
+                                        set_ticket_status(tk['id'], "Geschlossen")
+                                        st.rerun()
+                                    st.markdown('</div>', unsafe_allow_html=True)
 
 
             # --- TAB: METRIKEN ---
@@ -1111,20 +1219,20 @@ else:
                 
                 with m1:
                     with st.container(border=True):
-                        st.markdown(f'<div class="metrik-wert">{METRIKEN["serverauslastung_pct"]} %</div>', unsafe_allow_html=True)
-                        st.markdown('<div class="metrik-label"><span class="icon" style="font-size:16px;">dns</span> Infrastrukturlast</div>', unsafe_allow_html=True)
+                        st.markdown(f'<div class="metrik-wert" style="text-align: center;">{METRIKEN["serverauslastung_pct"]} %</div>', unsafe_allow_html=True)
+                        st.markdown('<div class="metrik-label" style="text-align: center;"><span class="icon" style="font-size:16px;">dns</span> Infrastrukturlast</div>', unsafe_allow_html=True)
                 with m2:
                     with st.container(border=True):
-                        st.markdown(f'<div class="metrik-wert">{METRIKEN["antwortlatenz_ms"]} ms</div>', unsafe_allow_html=True)
-                        st.markdown('<div class="metrik-label"><span class="icon" style="font-size:16px;">timer</span> Ø Inferenzzeit</div>', unsafe_allow_html=True)
+                        st.markdown(f'<div class="metrik-wert" style="text-align: center;">{METRIKEN["antwortlatenz_ms"]} ms</div>', unsafe_allow_html=True)
+                        st.markdown('<div class="metrik-label" style="text-align: center;"><span class="icon" style="font-size:16px;">timer</span> Ø Inferenzzeit</div>', unsafe_allow_html=True)
                 with m3:
                     with st.container(border=True):
-                        st.markdown(f'<div class="metrik-wert">{METRIKEN["maskierte_pii"]:,}</div>'.replace(",", "."), unsafe_allow_html=True)
-                        st.markdown('<div class="metrik-label"><span class="icon" style="font-size:16px;">policy</span> Gefilterte PII</div>', unsafe_allow_html=True)
+                        st.markdown(f'<div class="metrik-wert" style="text-align: center;">{METRIKEN["maskierte_pii"]:,}</div>'.replace(",", "."), unsafe_allow_html=True)
+                        st.markdown('<div class="metrik-label" style="text-align: center;"><span class="icon" style="font-size:16px;">policy</span> Gefilterte PII</div>', unsafe_allow_html=True)
                 with m4:
                     with st.container(border=True):
-                        st.markdown(f'<div class="metrik-wert">{METRIKEN["anfragen_heute"]}</div>', unsafe_allow_html=True)
-                        st.markdown('<div class="metrik-label"><span class="icon" style="font-size:16px;">forum</span> Anfragen heute</div>', unsafe_allow_html=True)
+                        st.markdown(f'<div class="metrik-wert" style="text-align: center;">{METRIKEN["anfragen_heute"]}</div>', unsafe_allow_html=True)
+                        st.markdown('<div class="metrik-label" style="text-align: center;"><span class="icon" style="font-size:16px;">forum</span> Anfragen heute</div>', unsafe_allow_html=True)
 
                 st.markdown("---")
 
@@ -1159,7 +1267,7 @@ else:
         st.markdown(
             '<div class="disclaimer">'
             '<span class="icon" style="color:#f59e0b; font-size:28px;">warning</span>'
-            '<div>Architektonischer Vorbehalt: Diese Funktion theoretisiert die geplante Endnutzer-Integration. '
+            '<div>Architektonischer Vorbehalt: Diese Funktion illustriert die geplante Endnutzer-Integration. '
             'Eine operative Bereitstellung erfolgt nach erfolgreicher Konfiguration der internen API-Gateways.</div>'
             '</div>',
             unsafe_allow_html=True,
