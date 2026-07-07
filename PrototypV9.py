@@ -429,7 +429,7 @@ BEISPIELFRAGEN = {
             "Pflegegrad 1 berechtigt zur Inanspruchnahme des Entlastungsbetrages "
             "gemäß § 45b SGB XI in Höhe von 125 Euro monatlich. "
             "<span class='onto-ref'>1<span class='tooltiptext'><strong>📌 Abrechnungsregel Pflegegrad 1</strong><br>Ontologie erzwang Verweis auf § 45b SGB XI. Sachleistungen wurden logisch ausgeschlossen.</span></span> "
-            "Eine Anerkennung als Pflegeleistung im Sinne der Sachleistungsvergabe (§ 36 SGB XI) is "
+            "Eine Anerkennung als Pflegeleistung im Sinne der Sachleistungsvergabe (§ 36 SGB XI) ist "
             "bei Pflegegrad 1 nicht möglich. Die Abrechnung erfolgt ausschließlich "
             "über den Entlastungsbetrag direkt mit der Pflegekasse. Interne "
             "Abrechnungsfrist: bis zum 5. des Folgemonats. "
@@ -730,6 +730,7 @@ else:
         ist_admin = st.session_state.rolle == "Administrator"
 
         if ist_admin:
+            # Fester Key hinzugefügt, um Tab-Fokus beim Neuladen dauerhaft beizubehalten
             tab_chat, tab_ticket, tab_onto, tab_regeln, tab_ticket_admin, tab_metriken = st.tabs([
                 ":material/forum: Wissensabfrage",
                 ":material/support_agent: Support",
@@ -737,12 +738,12 @@ else:
                 ":material/rule: Regelerkennung",
                 ":material/confirmation_number: Tickets",
                 ":material/analytics: Metriken",
-            ])
+            ], key="wms_admin_tabs_persistent")
         else:
             tab_chat, tab_ticket = st.tabs([
                 ":material/forum: Wissensabfrage", 
                 ":material/support_agent: Support"
-            ])
+            ], key="wms_user_tabs_persistent")
 
         # --- TAB: WISSENSABFRAGE (Chat-Interface) ---
         with tab_chat:
@@ -1158,7 +1159,7 @@ else:
                                 st.rerun()
                             st.markdown("<br>", unsafe_allow_html=True)
                             if st.button("Axiom verwerfen", key=f"abl_{rid}", icon=":material/close:", use_container_width=True):
-                                st.session_state.regel_status[rid] = "abgelehnt"  # <-- HIER KORRIGIERT
+                                st.session_state.regel_status[rid] = "abgelehnt"  # Rechtschreibfehler behoben
                                 st.rerun()
                         else:
                             st.markdown("**Status: Geprüft**")
@@ -1196,13 +1197,14 @@ else:
                             st.markdown(badge_html, unsafe_allow_html=True)
 
                         with col_t2:
-                            # Komplett stabiles Inline-Formular: Verhindert jeglichen React-Tab-Absturz in der Cloud!
+                            # CRASH-SCHUTZ: Jedes Ticket-Formular und Widget besitzt nun eine absolut eindeutige ID (key=...)
                             with st.form(key=f"status_form_{tk['id']}", clear_on_submit=False):
                                 status_optionen = ["Offen", "In Bearbeitung", "Geschlossen"]
                                 auswahl = st.selectbox(
                                     "Vorgangsstatus",
                                     options=status_optionen,
                                     index=status_optionen.index(tk['status']),
+                                    key=f"select_widget_{tk['id']}",  # <-- Verhindert den Absturz beim Klicken!
                                     label_visibility="collapsed"
                                 )
                                 if st.form_submit_button("Speichern", use_container_width=True):
