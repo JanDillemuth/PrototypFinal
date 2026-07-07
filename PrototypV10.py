@@ -40,7 +40,7 @@ st.markdown("""
     /* Google Material Symbols (Rounded) importieren für professionelle Piktogramme */
     @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0');
 
-    /* Globale Schriftart sanfter setzen, ohne die Icons pauschal zu oversaturieren */
+    /* Globale Schriftart sanfter setzen, ohne die Icons pauschal zu überschreiben */
     html, body, p, h1, h2, h3, h4, h5, h6, label, .markdown-text-container {
         font-family: "San Francisco", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
     }
@@ -78,33 +78,39 @@ st.markdown("""
 
     /* Modernisierte Schaltflächen (global) */
     .stButton > button, .stFormSubmitButton > button {
-        background: linear-gradient(135deg, var(--komm-gruen), #1a9660);
-        color: #ffffff;
-        border: none;
         border-radius: var(--radius-klein);
         padding: 0.5rem 1.2rem;
         font-weight: 600;
         font-size: 0.9rem;
         transition: all 0.2s ease;
-        box-shadow: var(--schatten-gruen);
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 8px;
     }
-    .stButton > button:hover, .stFormSubmitButton > button:hover {
+    
+    /* Primäre Buttons heben sich durch das KOMM-Grün ab */
+    .stButton > button[data-testid="stBaseButton-primary"], 
+    .stFormSubmitButton > button {
+        background: linear-gradient(135deg, var(--komm-gruen), #1a9660) !important;
+        color: #ffffff !important;
+        border: none !important;
+        box-shadow: var(--schatten-gruen) !important;
+    }
+    .stButton > button[data-testid="stBaseButton-primary"]:hover, 
+    .stFormSubmitButton > button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(18, 115, 74, 0.25);
+        box-shadow: 0 6px 20px rgba(18, 115, 74, 0.25) !important;
     }
     
-    /* Sekundäre Buttons (z.B. Logout, Zurück, Inaktiver Status) */
-    .btn-sekundaer > button {
+    /* Sekundäre Buttons (z.B. Logout, Zurück, inaktive Stati) */
+    .btn-sekundaer > button, .stButton > button[data-testid="stBaseButton-secondary"] {
         background: #ffffff !important;
         color: var(--text-dunkel) !important;
         border: 1px solid #e0e0e0 !important;
         box-shadow: none !important;
     }
-    .btn-sekundaer > button:hover {
+    .btn-sekundaer > button:hover, .stButton > button[data-testid="stBaseButton-secondary"]:hover {
         background: #f8f9fa !important;
         border-color: #d0d0d0 !important;
         box-shadow: var(--schatten-weich) !important;
@@ -336,6 +342,7 @@ st.markdown("""
     .profil-header-label { font-size: 0.8rem; text-transform: uppercase; color: var(--text-grau); letter-spacing: 0.05em; margin-bottom: 0.2rem;}
     .profil-header-wert { font-size: 1.1rem; font-weight: 600; color: var(--text-dunkel); margin-bottom: 1.2rem;}
 
+    /* Schönere, verblassende Trennlinien */
     hr { 
         border: 0 !important; 
         height: 1px !important; 
@@ -343,7 +350,7 @@ st.markdown("""
         margin: 2rem 0 !important; 
     }
     
-    /* Tooltips */
+    /* ONTOLOGIE-REFERENZEN (INLINE TOOLTIPS) */
     .onto-ref {
         display: inline-flex;
         align-items: center;
@@ -488,7 +495,7 @@ METRIKEN = {
 
 
 # =============================================================================
-# ABSCHNITT 3: SESSION STATE INITIALISIERUNG & ZUWEISUNGS-FUNKTIONEN
+# ABSCHNITT 3: SESSION STATE INITIALISIERUNG & HELPERS
 # =============================================================================
 def init_session():
     defaults = {
@@ -498,7 +505,6 @@ def init_session():
         "aktuelle_seite": "main",
         "modus": "Web UI Chat Interface",
         "ki_modus": "Ausgewogen (Standard)",
-        "chat_freitext_value": "",
         "chat_verlauf": [],
         "feedback": {},
         "eingereichtes_feedback": [
@@ -519,8 +525,8 @@ def init_session():
 
 init_session()
 
-def set_ticket_status(ticket_id, neuer_status):
-    """Ändert den Status eines Tickets direkt im Session State."""
+def setze_ticket_status(ticket_id, neuer_status):
+    """Aktualisiert den Status eines Tickets direkt im Session State."""
     for tk in st.session_state.tickets:
         if tk['id'] == ticket_id:
             tk['status'] = neuer_status
@@ -593,7 +599,7 @@ if not st.session_state.eingeloggt:
                 else:
                     st.error("Zugriff verweigert. Bitte 'Bilal', 'Jan', 'Youssef', 'Weinß' (Admin) oder 'Farhad' verwenden.")
                     
-        st.markdown("<p style='font-size: 0.85rem; color: #95a5a6; text-align: center;'>Demo-Umgebung: Bilal = Nutzer | Jan = Nutzer | Youssef = Nutzer | Weinß = Administrator | Farhad = Nutzer</p>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size: 0.85rem; color: #95a5a6; text-align: center;'>Demo-Umgebung: Bilal = Nutzer | Jan = Nutzer | Youssef = Nutzer | Weinß = Admin | Farhad = Nutzer</p>", unsafe_allow_html=True)
     
     st.stop()
 
@@ -634,30 +640,15 @@ with st.sidebar:
 
     if st.session_state.aktuelle_seite == "main":
         st.markdown("**Schnittstellen-Modus**")
-        
-        st.text_input("Aktiver Modus:", value=st.session_state.modus, disabled=True, key="wms_aktiv_modus_txt")
-        st.markdown("<div style='margin-bottom: 0.4rem;'></div>", unsafe_allow_html=True)
-        
-        if st.session_state.modus == "Web UI Chat Interface":
-            if st.button("Web UI Chat Interface", icon=":material/forum:", use_container_width=True):
-                pass
-        else:
-            st.markdown('<div class="btn-sekundaer">', unsafe_allow_html=True)
-            if st.button("Web UI Chat Interface", icon=":material/forum:", use_container_width=True):
-                st.session_state.modus = "Web UI Chat Interface"
-                st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
-
-        if st.session_state.modus == "Dokumenten-Integration (Office Plugin)":
-            if st.button("Dokumenten-Integration", icon=":material/description:", use_container_width=True):
-                pass
-        else:
-            st.markdown('<div class="btn-sekundaer">', unsafe_allow_html=True)
-            if st.button("Dokumenten-Integration", icon=":material/description:", use_container_width=True):
-                st.session_state.modus = "Dokumenten-Integration (Office Plugin)"
-                st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
-
+        modi = ["Web UI Chat Interface", "Dokumenten-Integration (Office Plugin)"]
+        neuer_modus = st.selectbox(
+            "Aktiver Modus",
+            options=modi,
+            index=modi.index(st.session_state.modus),
+            key="sb_modus",
+            label_visibility="collapsed"
+        )
+        st.session_state.modus = neuer_modus
         st.divider()
 
     st.caption("Version 1.2.0 — Modern UI Edition")
@@ -679,6 +670,9 @@ st.markdown(
 # ABSCHNITT 7: ROUTING (Profil oder WMS)
 # =============================================================================
 
+# -----------------------------------------------------------------------
+# UNTERSEITE: BENUTZERPROFIL
+# -----------------------------------------------------------------------
 if st.session_state.aktuelle_seite == "profil":
     st.markdown("### :material/manage_accounts: Benutzerprofil & Einstellungen")
     st.markdown(
@@ -720,6 +714,9 @@ if st.session_state.aktuelle_seite == "profil":
             st.markdown('<div class="profil-header-label">Letzter Login</div>', unsafe_allow_html=True)
             st.markdown('<div class="profil-header-wert">Heute, 08:14 Uhr (IP: 192.168.10.45)</div>', unsafe_allow_html=True)
 
+# -----------------------------------------------------------------------
+# HAUPTSEITE: WMS ANWENDUNG
+# -----------------------------------------------------------------------
 else:
     if st.session_state.modus == "Web UI Chat Interface":
 
@@ -831,62 +828,40 @@ else:
 
                     st.markdown("<hr>", unsafe_allow_html=True)
 
-            # --- GEÄNDERT: Formular entfernt für vollständige Button-Reaktivität ---
-            st.markdown("<p style='font-size: 0.95rem; font-weight: 600; margin-bottom: 0.5rem;'>KI-Verarbeitungsmodus wählen:</p>", unsafe_allow_html=True)
-            col_m1, col_m2, col_m3, _ = st.columns([2.5, 2.5, 3, 4])
-            
-            # Button: Ausgewogen
+            # --- KI-Modus Button-Auswahl ---
+            st.markdown("**KI-Verarbeitungsmodus wählen:**")
+            col_m1, col_m2, col_m3 = st.columns(3)
             with col_m1:
-                if st.session_state.ki_modus == "Ausgewogen (Standard)":
-                    st.button("Ausgewogen (Standard)", icon=":material/balance:", use_container_width=True, key="ki_b_std")
-                else:
-                    st.markdown('<div class="btn-sekundaer">', unsafe_allow_html=True)
-                    if st.button("Ausgewogen (Standard)", icon=":material/balance:", use_container_width=True, key="ki_b_std"):
-                        st.session_state.ki_modus = "Ausgewogen (Standard)"
-                        st.rerun()
-                    st.markdown('</div>', unsafe_allow_html=True)
-
-            # Button: Eco
+                if st.button("Ausgewogen (Standard)", icon=":material/balance:", use_container_width=True, type="primary" if st.session_state.ki_modus == "Ausgewogen (Standard)" else "secondary"):
+                    st.session_state.ki_modus = "Ausgewogen (Standard)"
+                    st.rerun()
             with col_m2:
-                if st.session_state.ki_modus == "Ressourcenschonend (Eco)":
-                    st.button("Ressourcenschonend (Eco)", icon=":material/energy_savings_leaf:", use_container_width=True, key="ki_b_eco")
-                else:
-                    st.markdown('<div class="btn-sekundaer">', unsafe_allow_html=True)
-                    if st.button("Ressourcenschonend (Eco)", icon=":material/energy_savings_leaf:", use_container_width=True, key="ki_b_eco"):
-                        st.session_state.ki_modus = "Ressourcenschonend (Eco)"
-                        st.rerun()
-                    st.markdown('</div>', unsafe_allow_html=True)
-
-            # Button: Deep-Thinking
+                if st.button("Ressourcenschonend (Eco)", icon=":material/energy_savings_leaf:", use_container_width=True, type="primary" if st.session_state.ki_modus == "Ressourcenschonend (Eco)" else "secondary"):
+                    st.session_state.ki_modus = "Ressourcenschonend (Eco)"
+                    st.rerun()
             with col_m3:
-                if st.session_state.ki_modus == "Analytisch (Deep-Thinking)":
-                    st.button("Analytisch (Deep-Thinking)", icon=":material/psychology:", use_container_width=True, key="ki_b_deep")
-                else:
-                    st.markdown('<div class="btn-sekundaer">', unsafe_allow_html=True)
-                    if st.button("Analytisch (Deep-Thinking)", icon=":material/psychology:", use_container_width=True, key="ki_b_deep"):
-                        st.session_state.ki_modus = "Analytisch (Deep-Thinking)"
-                        st.rerun()
-                    st.markdown('</div>', unsafe_allow_html=True)
+                if st.button("Analytisch (Deep-Thinking)", icon=":material/psychology:", use_container_width=True, type="primary" if st.session_state.ki_modus == "Analytisch (Deep-Thinking)" else "secondary"):
+                    st.session_state.ki_modus = "Analytisch (Deep-Thinking)"
+                    st.rerun()
 
-            st.markdown("<div style='margin-bottom: 0.8rem;'></div>", unsafe_allow_html=True)
+            # --- Eingabeformular ---
+            with st.form(key="freitext_form", clear_on_submit=True):
+                freitext = st.text_area(
+                    "Ihre Frage",
+                    placeholder="Geben Sie hier Ihr Anliegen ein...",
+                    height=90,
+                    label_visibility="collapsed",
+                )
+                col_btn, col_space = st.columns([1.5, 8.5])
+                with col_btn:
+                    absenden = st.form_submit_button("Senden", icon=":material/send:", use_container_width=True)
 
-            # Freitexteingabe über Session State gebunden
-            freitext = st.text_area(
-                "Ihre Frage",
-                value=st.session_state.chat_freitext_value,
-                placeholder="Geben Sie hier Ihr Anliegen ein...",
-                height=90,
-                label_visibility="collapsed",
-                key="wms_chat_textarea_input"
-            )
-            
-            col_btn, _ = st.columns([1.5, 10.5])
-            with col_btn:
-                absenden = st.button("Senden", icon=":material/send:", use_container_width=True)
+            # --- Anzeige des aktuellen Modus direkt unter dem Senden-Button ---
+            col_lbl, col_space_lbl = st.columns([3, 7])
+            with col_lbl:
+                st.text_input("Aktiver KI-Modus:", value=st.session_state.ki_modus, disabled=True)
 
             if absenden and freitext.strip():
-                user_anfrage = freitext.strip()
-                
                 if "Eco" in st.session_state.ki_modus:
                     wartezeit = 1.0 
                     lade_text = '<span class="icon">energy_savings_leaf</span> Eco-Modus aktiv: Schnelle Verarbeitung läuft ...'
@@ -909,13 +884,10 @@ else:
                 lade_platzhalter.empty()
 
                 eintrag = {
-                    "frage": user_anfrage,
+                    "frage": freitext.strip(),
                     "antwort": PLATZHALTER_ANTWORT,
                 }
                 st.session_state.chat_verlauf.append(eintrag)
-                
-                # Inputfeld nach erfolgreichem Senden zurücksetzen
-                st.session_state.chat_freitext_value = ""
                 st.rerun()
 
 
@@ -971,7 +943,7 @@ else:
                         st.markdown('<div class="onto-titel"><span class="icon">elderly</span> Domäne: Pflege</div>', unsafe_allow_html=True)
                         st.markdown("""
 **SGB XI – Pflegeleistungen**
-- Pflegegrade 1 bis 5
+- Pflegegrades 1 bis 5
 - Sachleistungen (§ 36)
 - Entlastungsbetrag (§ 45b)
 - Verhinderungspflege (§ 39)
@@ -1042,7 +1014,7 @@ else:
                 
                 with st.container(border=True):
                     st.markdown('<div class="onto-titel"><span class="icon">playlist_add_check</span> Produktiv geschaltete Reasoner-Regeln</div>', unsafe_allow_html=True)
-                    st.markdown("Hier sehen Sie alle Axiome, die aus dem Vorschlagswesen administrativ in den aktiven Betrieb übernommen wurden.")
+                    st.markdown("Hier sehen Sie alle Axiome, die aus dem Vorschlagswesen administrativ in den active Betrieb übernommen wurden.")
                     
                     alle_regeln_gesamt = REGEL_KANDIDATEN + st.session_state.manuelle_regeln
                     akzeptierte = [r for r in alle_regeln_gesamt if st.session_state.regel_status.get(r["id"]) == "akzeptiert"]
@@ -1169,7 +1141,7 @@ else:
                 st.markdown(
                     "<p style='color: var(--text-grau); margin-bottom: 2rem;'>"
                     "Zentrale Verwaltung aller Support-Eskalationen aus dem Mitarbeiterstamm. "
-                    "Änderungen am Status werden sofort live übernommen."
+                    "Änderungen am Status werden sofort per Button-Klick übernommen."
                     "</p>", unsafe_allow_html=True
                 )
 
@@ -1177,15 +1149,15 @@ else:
                     st.info("Das Ticket-System verzeichnet aktuell keine offenen Vorgänge.")
                 else:
                     for tk in reversed(st.session_state.tickets):
-                        
                         with st.container(border=True):
-                            col_t1, col_t2 = st.columns([3, 1.2])
+                            col_t1, col_t2 = st.columns([3, 1.5])
                             
                             with col_t1:
                                 st.markdown(f"**Vorgang #{tk['id']} | {tk['titel']}**")
                                 st.markdown(f"{tk['beschreibung']}")
                                 st.caption(f"Gemeldet von: {tk['ersteller']}")
 
+                                # Dynamische Status-Badges, die sich sofort anpassen
                                 if tk['status'] == "Offen":
                                     st.markdown('<span class="badge badge-nein">📋 STATUS: OFFEN</span>', unsafe_allow_html=True)
                                 elif tk['status'] == "In Bearbeitung":
@@ -1194,34 +1166,16 @@ else:
                                     st.markdown('<span class="badge badge-ok">✅ STATUS: GESCHLOSSEN</span>', unsafe_allow_html=True)
 
                             with col_t2:
-                                st.markdown("<p style='font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;'>Status ändern:</p>", unsafe_allow_html=True)
-                                
-                                if tk['status'] == "Offen":
-                                    st.button("Offen", key=f"btn_stat_offen_{tk['id']}", use_container_width=True)
-                                else:
-                                    st.markdown('<div class="btn-sekundaer">', unsafe_allow_html=True)
-                                    if st.button("Offen", key=f"btn_stat_offen_{tk['id']}", use_container_width=True):
-                                        set_ticket_status(tk['id'], "Offen")
-                                        st.rerun()
-                                    st.markdown('</div>', unsafe_allow_html=True)
-                                    
-                                if tk['status'] == "In Bearbeitung":
-                                    st.button("In Bearbeitung", key=f"btn_stat_ib_{tk['id']}", use_container_width=True)
-                                else:
-                                    st.markdown('<div class="btn-sekundaer">', unsafe_allow_html=True)
-                                    if st.button("In Bearbeitung", key=f"btn_stat_ib_{tk['id']}", use_container_width=True):
-                                        set_ticket_status(tk['id'], "In Bearbeitung")
-                                        st.rerun()
-                                    st.markdown('</div>', unsafe_allow_html=True)
-                                    
-                                if tk['status'] == "Geschlossen":
-                                    st.button("Geschlossen", key=f"btn_stat_ges_{tk['id']}", use_container_width=True)
-                                else:
-                                    st.markdown('<div class="btn-sekundaer">', unsafe_allow_html=True)
-                                    if st.button("Geschlossen", key=f"btn_stat_ges_{tk['id']}", use_container_width=True):
-                                        set_ticket_status(tk['id'], "Geschlossen")
-                                        st.rerun()
-                                    st.markdown('</div>', unsafe_allow_html=True)
+                                st.markdown("<p style='font-size:0.9rem; font-weight:600; margin-bottom:0.3rem;'>Status ändern:</p>", unsafe_allow_html=True)
+                                if st.button("Offen", key=f"btn_o_{tk['id']}", use_container_width=True, type="primary" if tk['status'] == "Offen" else "secondary"):
+                                    setze_ticket_status(tk['id'], "Offen")
+                                    st.rerun()
+                                if st.button("In Bearbeitung", key=f"btn_ib_{tk['id']}", use_container_width=True, type="primary" if tk['status'] == "In Bearbeitung" else "secondary"):
+                                    setze_ticket_status(tk['id'], "In Bearbeitung")
+                                    st.rerun()
+                                if st.button("Geschlossen", key=f"btn_g_{tk['id']}", use_container_width=True, type="primary" if tk['status'] == "Geschlossen" else "secondary"):
+                                    setze_ticket_status(tk['id'], "Geschlossen")
+                                    st.rerun()
 
 
             # --- TAB: METRIKEN ---
