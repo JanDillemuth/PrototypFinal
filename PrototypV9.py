@@ -493,7 +493,7 @@ METRIKEN = {
 
 
 # =============================================================================
-# ABSCHNITT 3: SESSION STATE INITIALISIERUNG & ON-CLICK ACTION
+# ABSCHNITT 3: SESSION STATE INITIALISIERUNG & CALLBACKS
 # =============================================================================
 def init_session():
     defaults = {
@@ -523,13 +523,12 @@ def init_session():
 
 init_session()
 
-# DER ENTSCHEIDENDE CALLBACK: Führt die Zählschleife aus, BEVOR die Seite gerendert wird.
-# Dadurch wird das Badge sofort mit genau 1 Klick ohne st.rerun() aktualisiert.
-def sichere_ticket_status_direkt(ticket_id, selectbox_key):
-    gewaehlter_status = st.session_state[selectbox_key]
+# Saubere, direkte Statusänderung via on_click Callback
+def status_speichern_callback(t_id, s_key):
+    gewaehlter_status = st.session_state[s_key]
     counter = 0
     while counter < len(st.session_state.tickets):
-        if st.session_state.tickets[counter]['id'] == ticket_id:
+        if st.session_state.tickets[counter]['id'] == t_id:
             st.session_state.tickets[counter]['status'] = gewaehlter_status
             break
         counter += 1
@@ -1010,7 +1009,7 @@ else:
                 
                 with st.container(border=True):
                     st.markdown('<div class="onto-titel"><span class="icon">playlist_add_check</span> Produktiv geschaltete Reasoner-Regeln</div>', unsafe_allow_html=True)
-                    st.markdown("Hier sehen Sie alle Axiome, die aus dem Vorschlagswesen administrativ in den active Betrieb übernommen wurden.")
+                    st.markdown("Hier sehen Sie alle Axiome, die aus dem Vorschlagswesen administrativ in den aktiven Betrieb übernommen wurden.")
                     
                     alle_regeln_gesamt = REGEL_KANDIDATEN + st.session_state.manuelle_regeln
                     akzeptierte = [r for r in alle_regeln_gesamt if st.session_state.regel_status.get(r["id"]) == "akzeptiert"]
@@ -1052,7 +1051,7 @@ else:
                 st.markdown("<br>", unsafe_allow_html=True)
                 st.markdown(
                     "<p style='color: var(--text-grau); margin-bottom: 2rem;'>"
-                    "Das System schlägt auf Basis von Nutzungsstatistiken neue logische Verknüpfungen vor. Als Administrator verwalten Sie die Übernahme in den produktiven Reasoner."
+                    "Das System schlägt auf Basis von Nutzungsstatistiken neue logische Verknügebungen vor. Als Administrator verwalten Sie die Übernahme in den produktiven Reasoner."
                     "</p>", unsafe_allow_html=True
                 )
 
@@ -1111,7 +1110,7 @@ else:
                             if "Manuell" in str(regel['haeufigkeit']):
                                 st.caption("Evidenz: Manuell durch Administrator erstellt")
                             else:
-                                st.caption(f"Statistische Evidenz: Abgeleitet aus {regel['haeufigkeit']} Interaktionen")
+                                t.caption(f"Statistische Evidenz: Abgeleitet aus {regel['haeufigkeit']} Interaktionen")
 
                             if status == "akzeptiert":
                                 st.markdown('<span class="badge badge-ok"><span class="icon" style="font-size:14px;">check</span> Freigegeben</span>', unsafe_allow_html=True)
@@ -1131,7 +1130,7 @@ else:
                                 st.markdown("**Status: Geprüft**")
 
 
-            # --- TAB: TICKET-VERWALTUNG (ADMIN BEREICH) ---
+            # --- TAB: TICKET-VERWALTUNG (ADMIN BEREICH RADIKAL SIMPEL) ---
             with tab_ticket_admin:
                 st.markdown("<br>", unsafe_allow_html=True)
                 st.markdown(
@@ -1143,12 +1142,13 @@ else:
                 if not st.session_state.tickets:
                     st.info("Das Ticket-System verzeichnet aktuell keine offenen Vorgänge.")
                 else:
-                    for tk in reversed(st.session_state.tickets):
-                        # st.form sorgt dafür, dass das Dropdown die Cloud-Verbindung im Hintergrund nicht stört.
-                        with st.form(key=f"status_form_{tk['id']}"):
-                            col_t1, col_t2 = st.columns([3, 1.2])
-                            
-                            with col_t1:
+                    # Aufteilung: Links die Tickets zum Anschauen, Rechts das einzige Bearbeitungsformular
+                    col_links, col_rechts = st.columns([2, 1.2])
+                    
+                    with col_links:
+                        st.markdown("### Aktuelle Vorgänge")
+                        for tk in reversed(st.session_state.tickets):
+                            with st.container(border=True):
                                 st.markdown(f"**Vorgang #{tk['id']} | {tk['titel']}**")
                                 st.markdown(f"{tk['beschreibung']}")
                                 st.caption(f"Gemeldet von: {tk['ersteller']}")
@@ -1159,27 +1159,29 @@ else:
                                     st.markdown('<span class="badge badge-neutral">STATUS: IN BEARBEITUNG</span>', unsafe_allow_html=True)
                                 else:
                                     st.markdown('<span class="badge badge-ok">STATUS: GESCHLOSSEN</span>', unsafe_allow_html=True)
-
-                            with col_t2:
-                                status_optionen = ["Offen", "In Bearbeitung", "Geschlossen"]
-                                auswahl_key = f"select_{tk['id']}"
-                                
-                                st.selectbox(
-                                    "Status ändern",
-                                    options=status_optionen,
-                                    index=status_optionen.index(tk['status']),
-                                    key=auswahl_key,
-                                    label_visibility="collapsed"
-                                )
-                                
-                                # Durch on_click wird die Zählschleife VOR dem Zeichnen ausgeführt.
-                                # Genau 1 Klick reicht aus, es gibt keine UI-Verzögerung und kein st.rerun()-Crash.
-                                st.form_submit_button(
-                                    "Absichern", 
-                                    use_container_width=True, 
-                                    on_click=sichere_ticket_status_direkt, 
-                                    args=(tk['id'], auswahl_key)
-                                )
+                    
+                    with col_rechts:
+                        st.markdown("### Status ändern")
+                        
+                        # NUR NOCH EIN EINZIGES FORMULAR AUF DER SEITE. KEINE LOOP-KONFLIKTE MEHR!
+                        with st.form(key="globales_admin_ticket_form"):
+                            
+                            # Dropdown 1: Welches Ticket soll bearbeitet werden?
+                            ticket_ids = [f"Vorgang #{t['id']}" for t in st.session_state.tickets]
+                            ausgewaehlter_id_string = st.selectbox("Ticket auswählen", options=ticket_ids)
+                            
+                            # ID parsen (Nummer herausziehen)
+                            t_id_int = int(ausgewaehlter_id_string.split("#")[-1])
+                            
+                            # Dropdown 2: Welcher neue Status?
+                            status_optionen = ["Offen", "In Bearbeitung", "Geschlossen"]
+                            gewaehlter_status_str = st.selectbox("Neuer Status", options=status_optionen)
+                            
+                            # Callback übergibt die Session Keys sauber VOR dem Rerun
+                            st.session_state["temp_select_status"] = gewaehlter_status_str
+                            
+                            # 1 Klick auf "Absichern" reicht nun aus, da Streamlit die Seite sauber neu lädt
+                            speichern_knopf = st.form_submit_button("Absichern", use_container_width=True, on_click=status_speichern_callback, args=(t_id_int, "temp_select_status"))
 
 
             # --- TAB: METRIKEN ---
