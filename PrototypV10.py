@@ -1,7 +1,7 @@
 # =============================================================================
 # app.py – KOMM Ambulante Dienste e.V. | Wissensmanagementsystem (WMS)
-# Vollständig modularer & Cloud-optimierter Prototyp (Proof of Concept)
-# Finaler Stand: Case-Insensitive Login, Native Callbacks & Sichere Layouts
+# Vollständig modularer, cloud-stabiler & bereinigter Prototyp
+# Finaler Stand: Native Container, 1-Klick Live-Callbacks & Fehlerfreies CSS
 # =============================================================================
 # Ausführung: streamlit run app.py
 # =============================================================================
@@ -19,7 +19,6 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-
 # --- ABSCHNITT 2: WISSENSBASIS, MOCKS & STATISCHE DATEN ---
 BEISPIELFRAGEN = {
     "Abrechnung Pflegegrad 1": {
@@ -28,7 +27,7 @@ BEISPIELFRAGEN = {
             "Pflegegrad 1 berechtigt zur Inanspruchnahme des Entlastungsbetrages "
             "gemäß § 45b SGB XI in Höhe von 125 Euro monatlich. "
             "<span class='onto-ref'>1<span class='tooltiptext'><strong>📌 Abrechnungsregel Pflegegrad 1</strong><br>Ontologie erzwang Verweis auf § 45b SGB XI. Sachleistungen wurden logisch ausgeschlossen.</span></span> "
-            "Eine Anerkennung als Pflegeleistung im Sinne der Sachleistungsvergabe (§ 36 SGB XI) is "
+            "Eine Anerkennung als Pflegeleistung im Sinne der Sachleistungsvergabe (§ 36 SGB XI) ist "
             "bei Pflegegrad 1 nicht möglich. Die Abrechnung erfolgt ausschließlich "
             "über den Entlastungsbetrag direkt mit die Pflegekasse. Interne "
             "Abrechnungsfrist: bis zum 5. des Folgemonats. "
@@ -92,29 +91,12 @@ METRIKEN = {
 }
 
 
-# --- ABSCHNITT 3: CORPORATE DESIGN & CSS ENGINE ---
+# --- ABSCHNITT 3: REIN ISOLIERTE STYLING-ENGINE ---
 def load_corporate_styling():
-    """Inplantiert das Corporate Design. Cloud-Sicher modifiziert (verhindert vertikale Tab-Einbrüche)."""
+    """Injiziert nur absolut sicheres CSS. Native Tab-Klassen bleiben unberührt."""
     st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0');
-
-        html, body, p, h1, h2, h3, h4, h5, h6, label {
-            font-family: "San Francisco", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
-        }
-
-        :root {
-            --komm-gruen: #12734a;
-            --komm-gruen-hover: #0e5c3a;
-            --komm-gruen-hell: #eaf4ee;
-            --text-dunkel: #2c3e50;
-            --text-grau: #7f8c8d;
-            --bg-chat-system: #f8fcf9;
-            --radius-klein: 12px;
-            --radius-gross: 24px;
-            --schatten-weich: 0 4px 20px rgba(0, 0, 0, 0.04);
-            --schatten-gruen: 0 4px 15px rgba(18, 115, 74, 0.15);
-        }
 
         .icon {
             font-family: 'Material Symbols Rounded' !important;
@@ -122,88 +104,49 @@ def load_corporate_styling():
             display: inline-block; vertical-align: middle; -webkit-font-smoothing: antialiased;
         }
 
-        /* Globale Buttons */
-        .stButton > button, .stFormSubmitButton > button {
-            background: linear-gradient(135deg, var(--komm-gruen), #1a9660) !important;
-            color: #ffffff !important; border: none !important; border-radius: var(--radius-klein) !important;
-            padding: 0.5rem 1.2rem !important; font-weight: 600 !important; transition: all 0.2s ease !important;
-            box-shadow: var(--schatten-gruen) !important; display: flex !important; align-items: center !important; gap: 8px !important;
-        }
-        .stButton > button:hover, .stFormSubmitButton > button:hover {
-            transform: translateY(-2px) !important; box-shadow: 0 6px 20px rgba(18, 115, 74, 0.25) !important;
-        }
-        
-        .btn-sekundaer > button {
-            background: #ffffff !important; color: var(--text-dunkel) !important; border: 1px solid #e0e0e0 !important; box-shadow: none !important;
-        }
-        .btn-sekundaer > button:hover {
-            background: #f8f9fa !important; border-color: #d0d0d0 !important; box-shadow: var(--schatten-weich) !important;
-        }
-
+        /* Obere Design-Header-Leiste */
         .wms-header {
-            background: linear-gradient(135deg, var(--komm-gruen), #1a9660); color: #ffffff;
-            padding: 1.2rem 1.8rem; border-radius: var(--radius-klein); margin-bottom: 2rem;
-            font-size: 1.2rem; font-weight: 600; box-shadow: var(--schatten-gruen); display: flex; align-items: center; gap: 12px;
+            background: linear-gradient(135deg, #12734a, #1a9660); color: #ffffff;
+            padding: 1.2rem 1.8rem; border-radius: 12px; margin-bottom: 2rem;
+            font-size: 1.2rem; font-weight: 600; box-shadow: 0 4px 15px rgba(18, 115, 74, 0.15);
+            display: flex; align-items: center; gap: 12px;
         }
 
+        /* Login-Box */
         .login-container {
-            background-color: #ffffff; border-radius: var(--radius-gross); padding: 3rem 2.5rem;
+            background-color: #ffffff; border-radius: 24px; padding: 3rem 2.5rem;
             box-shadow: 0 10px 40px rgba(0,0,0,0.08); margin-top: 5vh; text-align: center; margin-bottom: 2rem;
         }
-        .login-icon { font-size: 48px; color: var(--komm-gruen); margin-bottom: 1rem; }
 
-        /* Chat-Interface */
+        /* Chat-Design */
         .chat-row-user { display: flex; justify-content: flex-end; align-items: flex-end; margin-bottom: 1.5rem; gap: 12px; }
         .chat-row-system { display: flex; justify-content: flex-start; align-items: flex-end; margin-bottom: 1.5rem; gap: 12px; }
         .chat-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
-        .avatar-user { background-color: var(--komm-gruen-hell); color: var(--komm-gruen); }
-        .avatar-system { background-color: #1a9660; color: #ffffff; box-shadow: var(--schatten-gruen); }
+        .avatar-user { background-color: #eaf4ee; color: #12734a; }
+        .avatar-system { background-color: #1a9660; color: #ffffff; box-shadow: 0 4px 15px rgba(18, 115, 74, 0.15); }
 
-        .msg-user { background-color: var(--komm-gruen); color: #ffffff; padding: 1.2rem 1.4rem; border-radius: 24px 24px 4px 24px; max-width: 75%; box-shadow: var(--schatten-gruen); font-size: 0.95rem; line-height: 1.5; }
-        .msg-system { background-color: var(--bg-chat-system); border: 1px solid #eaf0ed; color: var(--text-dunkel); padding: 1.2rem 1.4rem; border-radius: 24px 24px 24px 4px; max-width: 75%; box-shadow: var(--schatten-weich); font-size: 0.95rem; line-height: 1.6; }
+        .msg-user { background-color: #12734a; color: #ffffff; padding: 1.2rem 1.4rem; border-radius: 24px 24px 4px 24px; max-width: 75%; box-shadow: 0 4px 15px rgba(18, 115, 74, 0.15); font-size: 0.95rem; line-height: 1.5; }
+        .msg-system { background-color: #f8fcf9; border: 1px solid #eaf0ed; color: #2c3e50; padding: 1.2rem 1.4rem; border-radius: 24px 24px 24px 4px; max-width: 75%; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04); font-size: 0.95rem; line-height: 1.6; }
         
         .msg-label { font-size: 0.75rem; font-weight: 600; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 4px; }
         .label-user { color: rgba(255,255,255,0.8); }
-        .label-system { color: var(--komm-gruen); }
+        .label-system { color: #12734a; }
 
-        /* Loader-Animation */
-        .loader-container { margin: 1rem 0; padding: 1.5rem; background: #ffffff; border-radius: var(--radius-klein); border: 1px solid #eaeaea; box-shadow: var(--schatten-weich); text-align: center; }
-        .loader-text { font-weight: 600; color: var(--komm-gruen); margin-bottom: 0.8rem; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .modern-loader { width: 100%; height: 6px; background-color: var(--komm-gruen-hell); border-radius: 10px; overflow: hidden; position: relative; }
-        .modern-loader::after { content: ''; position: absolute; left: -50%; height: 100%; width: 50%; background-color: var(--komm-gruen); border-radius: 10px; animation: slide 1.2s infinite ease-in-out; }
+        /* Lade-Animation */
+        .loader-container { margin: 1rem 0; padding: 1.5rem; background: #ffffff; border-radius: 12px; border: 1px solid #eaeaea; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04); text-align: center; }
+        .loader-text { font-weight: 600; color: #12734a; margin-bottom: 0.8rem; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .modern-loader { width: 100%; height: 6px; background-color: #eaf4ee; border-radius: 10px; overflow: hidden; position: relative; }
+        .modern-loader::after { content: ''; position: absolute; left: -50%; height: 100%; width: 50%; background-color: #12734a; border-radius: 10px; animation: slide 1.2s infinite ease-in-out; }
         @keyframes slide { 0% { left: -50%; } 100% { left: 100%; } }
 
-        .disclaimer { background-color: #fff8e1; border: 1px solid #fde68a; border-left: 4px solid #f59e0b; border-radius: var(--radius-klein); padding: 1.2rem 1.4rem; margin: 1rem 0 1.4rem 0; font-size: 0.92rem; color: var(--text-dunkel); line-height: 1.5; box-shadow: var(--schatten-weich); display: flex; align-items: center; gap: 12px; }
+        .disclaimer { background-color: #fff8e1; border: 1px solid #fde68a; border-left: 4px solid #f59e0b; border-radius: 12px; padding: 1.2rem 1.4rem; margin: 1rem 0 1.4rem 0; font-size: 0.92rem; color: #2c3e50; line-height: 1.5; display: flex; align-items: center; gap: 12px; }
 
-        /* WMS-Cards (Sichere CSS-Klasse anstelle von globalem stContainer) */
-        .wms-card {
-            border-radius: var(--radius-klein) !important; background-color: #ffffff !important;
-            border: 1px solid #eaeaea !important; padding: 1.5rem !important;
-            box-shadow: var(--schatten-weich) !important; margin-bottom: 1rem !important;
-        }
-        .wms-card:hover {
-            transform: translateY(-2px) !important; box-shadow: 0 8px 24px rgba(18, 115, 74, 0.12) !important; border-color: rgba(18, 115, 74, 0.3) !important; transition: all 0.2s ease;
-        }
-        
-        .onto-titel { font-size: 1.1rem; font-weight: 700; color: var(--komm-gruen); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
-        .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
-        .badge-ok { background-color: var(--komm-gruen-hell); color: var(--komm-gruen); }
-        .badge-nein { background-color: #fee2e2; color: #b91c1c; }
-        .badge-neutral { background-color: #f3f4f6; color: #4b5563; }
-
-        .metrik-wert { font-size: 2rem; font-weight: 800; color: var(--komm-gruen); margin-bottom: 0.2rem; }
-        .metrik-label { font-size: 0.85rem; color: var(--text-grau); font-weight: 600; text-transform: uppercase; }
-
-        /* Tooltips */
-        .onto-ref { display: inline-flex; align-items: center; justify-content: center; background-color: var(--komm-gruen-hell); color: var(--komm-gruen); border-radius: 50%; width: 18px; height: 18px; font-size: 10px; font-weight: 800; cursor: pointer; margin: 0 4px; position: relative; vertical-align: super; box-shadow: 0 2px 4px rgba(18, 115, 74, 0.1); }
-        .onto-ref:hover { background-color: var(--komm-gruen); color: #ffffff; }
-        .onto-ref .tooltiptext { visibility: hidden; width: 260px; background-color: var(--text-dunkel); color: #ffffff; text-align: left; border-radius: 8px; padding: 10px 14px; position: absolute; z-index: 9999; bottom: 140%; left: 50%; transform: translateX(-50%); opacity: 0; transition: opacity 0.3s; font-size: 0.85rem; font-weight: normal; line-height: 1.5; box-shadow: 0 10px 25px rgba(0,0,0,0.2); pointer-events: none; }
-        .onto-ref .tooltiptext::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: var(--text-dunkel) transparent transparent transparent; }
+        /* Ontologie Tooltips */
+        .onto-ref { display: inline-flex; align-items: center; justify-content: center; background-color: #eaf4ee; color: #12734a; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; font-weight: 800; cursor: pointer; margin: 0 4px; position: relative; vertical-align: super; box-shadow: 0 2px 4px rgba(18, 115, 74, 0.1); }
+        .onto-ref:hover { background-color: #12734a; color: #ffffff; }
+        .onto-ref .tooltiptext { visibility: hidden; width: 260px; background-color: #2c3e50; color: #ffffff; text-align: left; border-radius: 8px; padding: 10px 14px; position: absolute; z-index: 9999; bottom: 140%; left: 50%; transform: translateX(-50%); opacity: 0; transition: opacity 0.3s; font-size: 0.85rem; font-weight: normal; line-height: 1.5; box-shadow: 0 10px 25px rgba(0,0,0,0.2); pointer-events: none; }
+        .onto-ref .tooltiptext::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: #2c3e50 transparent transparent transparent; }
         .onto-ref:hover .tooltiptext { visibility: visible; opacity: 1; }
-
-        .profil-header-label { font-size: 0.8rem; text-transform: uppercase; color: var(--text-grau); letter-spacing: 0.05em; margin-bottom: 0.2rem;}
-        .profil-header-wert { font-size: 1.1rem; font-weight: 600; color: var(--text-dunkel); margin-bottom: 1.2rem;}
-        hr { border: 0 !important; height: 1px !important; background: linear-gradient(to right, rgba(18, 115, 74, 0), rgba(18, 115, 74, 0.4), rgba(18, 115, 74, 0)) !important; margin: 2rem 0 !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -216,7 +159,7 @@ def get_image_base64(pfad):
 LOGO_BASE64 = get_image_base64("Komm.png")
 
 
-# --- ABSCHNITT 4: SESSION STATE ENGIE ---
+# --- ABSCHNITT 4: SESSION STATE INITIALISIERUNG ---
 def init_session():
     defaults = {
         "eingeloggt": False,
@@ -244,23 +187,22 @@ def init_session():
             st.session_state[schluessel] = wert
 
 
-# --- ABSCHNITT 5: REAKTIVE ACTIONS & CALLBACKS ---
+# --- ABSCHNITT 5: VERZÖGERUNGSFREIE LIVE-CALLBACKS ---
 def sichere_ticket_status_direkt(ticket_id, selectbox_key):
-    """Callback: Überschreibt Status sofort reaktiv im State vor dem Renderprozess."""
-    st.session_state.tickets = [
-        {**tk, "status": st.session_state[selectbox_key]} if tk['id'] == ticket_id else tk
-        for tk in st.session_state.tickets
-    ]
+    gewaehlter_status = st.session_state[selectbox_key]
+    for tk in st.session_state.tickets:
+        if tk['id'] == ticket_id:
+            tk['status'] = gewaehlter_status
+            break
 
-def trigger_schnellstart_frage(key):
-    """Callback für Beispielfragen."""
+def trigger_beispielfrage(key):
     st.session_state.chat_verlauf.append({
         "frage": BEISPIELFRAGEN[key]["frage_voll"],
         "antwort": BEISPIELFRAGEN[key]["antwort"],
     })
 
 
-# --- ABSCHNITT 6: MODULARE RENDER-FUNKTIONEN (VIEWS) ---
+# --- ABSCHNITT 6: NATIVE, CLOUD-SICHERE UI-KOMPONENTEN ---
 
 def render_login_screen():
     col1, col2, col3 = st.columns([1, 1.2, 1])
@@ -289,7 +231,7 @@ def render_login_screen():
 def render_sidebar():
     with st.sidebar:
         if LOGO_BASE64:
-            st.markdown(f'<div style="text-align: center; margin-bottom: 1.5rem; margin-top: 1rem;"><img src="data:image/png;base64,{LOGO_BASE64}" style="max-width: 85%; height: auto;"><p style="color: var(--text-grau); font-size: 0.85rem; margin-top: 0.5rem; font-weight: 600;">WMS Prototyp</p></div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="text-align: center; margin-bottom: 1.5rem; margin-top: 1rem;"><img src="data:image/png;base64,{LOGO_BASE64}" style="max-width: 85%; height: auto;"><p style="color: #7f8c8d; font-size: 0.85rem; margin-top: 0.5rem; font-weight: 600;">WMS Prototyp</p></div>', unsafe_allow_html=True)
         else:
             st.markdown("<h3 style='color:#12734a; font-weight:700; display:flex; align-items:center; gap:8px;'><span class='icon'>neurology</span> WMS Prototyp</h3>", unsafe_allow_html=True)
         st.divider()
@@ -316,7 +258,7 @@ def render_sidebar():
 
 def view_profile_page():
     st.markdown("### :material/manage_accounts: Benutzerprofil & Einstellungen")
-    st.markdown("<p style='color: var(--text-grau); margin-bottom: 2rem;'>Verwalten Sie hier Ihre persönlichen Daten, Sicherheitsfreigaben und Systemschnittstellen.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #7f8c8d; margin-bottom: 2rem;'>Verwalten Sie hier Ihre persönlichen Daten, Sicherheitsfreigaben und Systemschnittstellen.</p>", unsafe_allow_html=True)
     
     st.markdown('<div class="btn-sekundaer" style="max-width: 300px;">', unsafe_allow_html=True)
     if st.button("Zurück zum WMS Dashboard", icon=":material/arrow_back:", use_container_width=True):
@@ -327,39 +269,34 @@ def view_profile_page():
 
     col_prof1, col_prof2 = st.columns(2)
     with col_prof1:
-        st.markdown(f"""
-        <div class="wms-card">
-            <div class="onto-titel"><span class="icon">badge</span> Persönliche Daten</div>
-            <div class="profil-header-label">Vollständiger Name</div>
-            <div class="profil-header-wert">{st.session_state.benutzername}</div>
-            <div class="profil-header-label">Organisatorische Zuordnung</div>
-            <div class="profil-header-wert">Zentrale Dienste (Bockenheim)</div>
-            <div class="profil-header-label">Dienstliche E-Mail</div>
-            <div class="profil-header-wert">{st.session_state.benutzername.lower()}@komm-ev.de</div>
-        </div>
-        """, unsafe_allow_html=True)
+        with st.container(border=True):
+            st.markdown('### :material/badge: Persönliche Daten')
+            st.markdown('<div style="font-size:0.8rem; text-transform:uppercase; color:#7f8c8d; margin-bottom:0.2rem;">Vollständiger Name</div>', unsafe_allow_html=True)
+            st.markdown(f'**{st.session_state.benutzername}**\n\n')
+            st.markdown('<div style="font-size:0.8rem; text-transform:uppercase; color:#7f8c8d; margin-bottom:0.2rem;">Organisatorische Zuordnung</div>', unsafe_allow_html=True)
+            st.markdown('Zentrale Dienste (Bockenheim)\n\n')
+            st.markdown('<div style="font-size:0.8rem; text-transform:uppercase; color:#7f8c8d; margin-bottom:0.2rem;">Dienstliche E-Mail</div>', unsafe_allow_html=True)
+            st.markdown(f'`{st.session_state.benutzername.lower()}@komm-ev.de`')
 
     with col_prof2:
-        badge_html = '<span class="badge badge-ok"><span class="icon" style="font-size:14px;">check_circle</span> Vollzugriff (Tier 1)</span>' if st.session_state.rolle == "Administrator" else '<span class="badge badge-neutral"><span class="icon" style="font-size:14px;">info</span> Standardzugriff (Tier 3)</span>'
-        st.markdown(f"""
-        <div class="wms-card">
-            <div class="onto-titel"><span class="icon">security</span> Sicherheit & Autorisierung</div>
-            <div class="profil-header-label">Systemrolle (RBAC)</div>
-            <div class="profil-header-wert">{st.session_state.rolle}</div>
-            <div class="profil-header-label">Zugriffslevel</div>
-            <div class="profil-header-wert">{badge_html}</div>
-            <div class="profil-header-label">Letzter Login</div>
-            <div class="profil-header-wert">Heute, 08:14 Uhr (IP: 192.168.10.45)</div>
-        </div>
-        """, unsafe_allow_html=True)
+        badge_style = 'background-color:#eaf4ee; color:#12734a; padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:700;' if st.session_state.rolle == "Administrator" else 'background-color:#f3f4f6; color:#4b5563; padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:700;'
+        badge_text = '✅ Vollzugriff (Tier 1)' if st.session_state.rolle == "Administrator" else 'ℹ️ Standardzugriff (Tier 3)'
+        with st.container(border=True):
+            st.markdown('### :material/security: Sicherheit & Autorisierung')
+            st.markdown('<div style="font-size:0.8rem; text-transform:uppercase; color:#7f8c8d; margin-bottom:0.2rem;">Systemrolle (RBAC)</div>', unsafe_allow_html=True)
+            st.markdown(f'**{st.session_state.rolle}**\n\n')
+            st.markdown('<div style="font-size:0.8rem; text-transform:uppercase; color:#7f8c8d; margin-bottom:0.2rem;">Zugriffslevel</div>', unsafe_allow_html=True)
+            st.markdown(f'<span style="{badge_style}">{badge_text}</span><br><br>', unsafe_allow_html=True)
+            st.markdown('<div style="font-size:0.8rem; text-transform:uppercase; color:#7f8c8d; margin-bottom:0.2rem;">Letzter Login</div>', unsafe_allow_html=True)
+            st.markdown('Heute, 08:14 Uhr (IP: 192.168.10.45)')
 
 def tab_wissensabfrage():
-    st.markdown("<br><p style='color: var(--text-grau); margin-bottom: 2rem;'>Stellen Sie eine natürlichsprachliche Frage zu Pflegeleistungen, Abrechnungsregeln oder internen Verfahrensrichtlinien.</p>", unsafe_allow_html=True)
+    st.markdown("<br><p style='color: #7f8c8d; margin-bottom: 2rem;'>Stellen Sie eine natürlichsprachliche Frage zu Pflegeleistungen, Abrechnungsregeln oder internen Verfahrensrichtlinien.</p>", unsafe_allow_html=True)
     st.markdown("**Nutzer haben oft gefragt – anklicken zum Abrufen:**")
     
     col_b1, col_b2, col_b3 = st.columns(3)
     for col, key in zip([col_b1, col_b2, col_b3], BEISPIELFRAGEN.keys()):
-        col.button(key, key=f"bsp_{key}", icon=":material/lightbulb:", use_container_width=True, on_click=trigger_schnellstart_frage, args=(key,))
+        col.button(key, key=f"bsp_{key}", icon=":material/lightbulb:", use_container_width=True, on_click=trigger_beispielfrage, args=(key,))
     st.divider()
 
     if not st.session_state.chat_verlauf:
@@ -402,14 +339,8 @@ def tab_wissensabfrage():
 
     if absenden and freitext.strip():
         st.session_state.ki_modus = neuer_ki_modus
+        wartezeit, icon_type, lade_txt = (1.0, "energy_savings_leaf", "Eco-Modus aktiv: Schnelle Verarbeitung läuft ...") if "Eco" in neuer_ki_modus else ((3.5, "psychology", "Analytischer Modus: Tiefgreifende SGB-Prüfung läuft ...") if "Deep-Thinking" in neuer_ki_modus else (2.0, "memory", "Neuro-Symbolische Verarbeitung läuft ..."))
         
-        if "Eco" in neuer_ki_modus:
-            wartezeit, icon_type, lade_txt = 1.0, "energy_savings_leaf", "Eco-Modus aktiv: Schnelle Verarbeitung läuft ..."
-        elif "Deep-Thinking" in neuer_ki_modus:
-            wartezeit, icon_type, lade_txt = 3.5, "psychology", "Analytischer Modus: Tiefgreifende SGB-Prüfung läuft ..."
-        else:
-            wartezeit, icon_type, lade_txt = 2.0, "memory", "Neuro-Symbolische Verarbeitung läuft ..."
-            
         lade_platzhalter = st.empty()
         lade_platzhalter.markdown(f'<div class="loader-container"><div class="loader-text"><span class="icon">{icon_type}</span> {lade_txt}</div><div class="modern-loader"></div></div>', unsafe_allow_html=True)
         time.sleep(wartezeit)
@@ -419,7 +350,7 @@ def tab_wissensabfrage():
         st.rerun()
 
 def tab_support_client():
-    st.markdown("<br><p style='color: var(--text-grau); margin-bottom: 2rem;'>Melden Sie hier inhaltliche Fehler, fehlende SGB-Richtlinien oder technische Anomalien an die Systemadministration. Zum Absenden beide Felder ausfüllen!</p>", unsafe_allow_html=True)
+    st.markdown("<br><p style='color: #7f8c8d; margin-bottom: 2rem;'>Melden Sie hier inhaltliche Fehler, fehlende SGB-Richtlinien oder technische Anomalien an die Systemadministration. Zum Absenden beide Felder ausfüllen!</p>", unsafe_allow_html=True)
     with st.form(key="ticket_erstellen_form", clear_on_submit=True):
         ticket_titel = st.text_input("Gegenstand der Meldung", placeholder="Kurze und präzise Zusammenfassung...")
         ticket_beschr = st.text_area("Detaillierte Beschreibung", placeholder="Welcher Fehler ist aufgetreten? Welche Information fehlt?", height=120)
@@ -435,40 +366,49 @@ def tab_support_client():
                 st.success("Ihr Support-Ticket wurde im System erfasst und an die Administration weitergeleitet.", icon=":material/check_circle:")
 
 def tab_ontologie_admin():
-    st.markdown("<br><p style='color: var(--text-grau); margin-bottom: 2rem;'>Übersicht der implementierten Wissensdomänen. Dies ist das Fundament des regelbasierten Reasoners zur Vermeidung von Halluzinationen.</p>", unsafe_allow_html=True)
+    st.markdown("<br><p style='color: #7f8c8d; margin-bottom: 2rem;'>Übersicht der implementierten Wissensdomänen. Dies ist das Fundament des regelbasierten Reasoners zur Vermeidung von Halluzinationen.</p>", unsafe_allow_html=True)
     col_p, col_a, col_j = st.columns(3)
     
     with col_p:
-        st.markdown('<div class="wms-card"><div class="onto-titel"><span class="icon">elderly</span> Domäne: Pflege</div><strong>SGB XI – Pflegeleistungen</strong><br>• Pflegegrade 1 bis 5<br>• Sachleistungen (§ 36)<br>• Entlastungsbetrag (§ 45b)<br>• Verhinderungspflege (§ 39)<br><br><strong>Dokumentationsstandards</strong><br>• Leistungsnachweise<br>• Pflegeberichte<br>• MDK-Vorgaben</div>', unsafe_allow_html=True)
+        with st.container(border=True):
+            st.markdown('### :material/elderly: Domäne: Pflege')
+            st.markdown('**SGB XI – Pflegeleistungen**\n- Pflegegrade 1 bis 5\n- Sachleistungen (§ 36)\n- Entlastungsbetrag (§ 45b)\n- Verhinderungspflege (§ 39)\n\n**Dokumentationsstandards**\n- Leistungsnachweise\n- Pflegeberichte\n- MDK-Vorgaben')
         with st.expander("🔍 Hinterlegte Axiome einsehen"):
             st.markdown("**Axiom P-01 (Exklusivität):** `IF Pflegegrad == 1 THEN LOCK(Sachleistung) AND ALLOW(Entlastungsbetrag)`\n\n**Axiom P-02 (Fristen-Eskalation):** `IF Zeit(Leistungserbringung) + 24h < Zeit(Jetzt) AND Status(Doku) == \"Offen\" THEN TRIGGER(Warnung_PDL)`")
 
     with col_a:
-        st.markdown('<div class="wms-card"><div class="onto-titel"><span class="icon">accessible</span> Domäne: Assistenz</div><strong>SGB IX – Eingliederungshilfe</strong><br>• Persönliche Assistenz<br>• Teilhabe am Arbeitsleben<br>• Soziale Teilhabe<br><br><strong>Hilfeplanverfahren</strong><br>• Bedarfsermittlung<br>• Zielvereinbarungen<br>• Fortschreibung</div>', unsafe_allow_html=True)
+        with st.container(border=True):
+            st.markdown('### :material/accessible: Domäne: Assistenz')
+            st.markdown('**SGB IX – Eingliederungshilfe**\n- Persönliche Assistenz\n- Teilhabe am Arbeitsleben\n- Soziale Teilhabe\n\n**Hilfeplanverfahren**\n- Bedarfsermittlung\n- Zielvereinbarungen\n- Fortschreibung')
         with st.expander("🔍 Hinterlegte Axiome einsehen"):
             st.markdown("**Axiom A-01 (Kausalität Hilfeplan):** `IF NOT EXISTS(Bedarfsermittlung) THEN LOCK(Zielvereinbarung)`\n\n**Axiom A-02 (Ressourcenzuteilung):** `IF Status(Bewilligung) == \"Ausstehend\" THEN LIMIT(Leistung, Notfallversorgung)`")
 
     with col_j:
-        st.markdown('<div class="wms-card"><div class="onto-titel"><span class="icon">child_care</span> Domäne: Jugendhilfe</div><strong>SGB VIII – Leistungen</strong><br>• Ambulante Hilfen (§ 27 ff.)<br>• Sozialpädagogische Familienhilfe<br>• Erziehungsbeistandschaft<br><br><strong>Datenschutz (Sonderregeln)</strong><br>• Schweigepflicht (§ 203 StGB)<br>• Aufbewahrungsfristen</div>', unsafe_allow_html=True)
+        with st.container(border=True):
+            st.markdown('### :material/child_care: Domäne: Jugendhilfe')
+            st.markdown('**SGB VIII – Leistungen**\n- Ambulante Hilfen (§ 27 ff.)\n- Sozialpädagogische Familienhilfe\n- Erziehungsbeistandschaft\n\n**Datenschutz (Sonderregeln)**\n- Schweigepflicht (§ 203 StGB)\n- Aufbewahrungsfristen')
         with st.expander("🔍 Hinterlegte Axiome einsehen"):
             st.markdown("**Axiom J-01 (Schutzauftrag § 8a):** `IF Indikator(Kindeswohlgefährdung) == True THEN OVERRIDE(Schweigepflicht) AND REQUIRE(Meldung_Jugendamt)`\n\n**Axiom J-02 (Altersgrenzen):** `IF Alter(Klient) > 21 THEN REQUIRE(Sonderfallprüfung_SGB_VIII)`")
 
     st.markdown("<br>", unsafe_allow_html=True)
-    with st.container():
-        st.markdown('<div class="wms-card"><div class="onto-titel"><span class="icon">playlist_add_check</span> Produktiv geschaltete Reasoner-Regeln</div>Hier sehen Sie alle Axiome, die aus dem Vorschlagswesen administrativ in den active Betrieb übernommen wurden.</div>', unsafe_allow_html=True)
+    with st.container(border=True):
+        st.markdown('### :material/playlist_add_check: Produktiv geschaltete Reasoner-Regeln')
+        st.markdown('Hier sehen Sie alle Axiome, die aus dem Vorschlagswesen administrativ in den aktiven Betrieb übernommen wurden.')
         alle_regeln_gesamt = REGEL_KANDIDATEN + st.session_state.manuelle_regeln
         akzeptierte = [r for r in alle_regeln_gesamt if st.session_state.regel_status.get(r["id"]) == "akzeptiert"]
         if akzeptierte:
             for regel in reversed(akzeptierte):
-                st.markdown(f'<div class="wms-card"><b>{regel["titel"]}</b><br><small>{regel["beschreibung"]}</small><br><span class="badge badge-ok"><span class="icon" style="font-size:14px;">bolt</span> Zuletzt hinzugefügt</span></div>', unsafe_allow_html=True)
+                with st.container(border=True):
+                    st.markdown(f'**{regel["titel"]}**\n\n{regel["beschreibung"]}')
+                    st.markdown('<span style="background-color:#eaf4ee; color:#12734a; padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:700;">⚡ Live-Axiom</span>', unsafe_allow_html=True)
     st.divider()
     st.caption(f"Aktive logische Axiome: **{METRIKEN['aktive_axiome']}** &nbsp;|&nbsp; Ontologie-Version: **1.3.0** &nbsp;|&nbsp; Stand der Revision: **07.07.2026**")
 
 def tab_regelerkennung_admin():
-    st.markdown("<br><p style='color: var(--text-grau); margin-bottom: 2rem;'>Das System schlägt auf Basis von Nutzungsstatistiken neue logische Verknüpfungen vor. Als Administrator verwalten Sie die Übernahme in den produktiven Reasoner.</p>", unsafe_allow_html=True)
+    st.markdown("<br><p style='color: #7f8c8d; margin-bottom: 2rem;'>Das System schlägt auf Basis von Nutzungsstatistiken neue logische Verknüpfungen vor. Als Administrator verwalten Sie die Übernahme in den produktiven Reasoner.</p>", unsafe_allow_html=True)
     
     with st.form("axiom_form", clear_on_submit=True):
-        st.markdown('<div class="onto-titel"><span class="icon">schema</span> Neue Ontologie-Regel erstellen</div>', unsafe_allow_html=True)
+        st.markdown('### :material/schema: Neue Ontologie-Regel erstellen')
         regel_titel = st.text_input("Titel der Regel", placeholder="z.B. Abrechnungsregel Sonderfall")
         col_w, col_b, col_d = st.columns(3)
         entitaet = col_w.text_input("Wenn (Entität)", placeholder="z.B. Pflegegrad")
@@ -486,56 +426,82 @@ def tab_regelerkennung_admin():
         rid = regel["id"]
         status = st.session_state.regel_status[rid]
         
-        status_badge = '<span class="badge badge-ok"><span class="icon" style="font-size:14px;">check</span> Freigegeben</span>' if status == "akzeptiert" else ('<span class="badge badge-nein"><span class="icon" style="font-size:14px;">close</span> Verworfen</span>' if status == "abgelehnt" else "")
+        status_badge = '<span style="background-color:#eaf4ee; color:#12734a; padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:700;">✓ Freigegeben</span>' if status == "akzeptiert" else ('<span style="background-color:#fee2e2; color:#b91c1c; padding:4px 12px; border-radius:20px; font-size:0.75rem; font-weight:700;">✕ Verworfen</span>' if status == "abgelehnt" else "")
         evidenz_text = "Evidenz: Manuell durch Administrator erstellt" if "Manuell" in str(regel['haeufigkeit']) else f"Statistische Evidenz: Abgeleitet aus {regel['haeufigkeit']} Interaktionen"
         
-        with st.container():
+        with st.container(border=True):
             col_info, col_btn = st.columns([4, 1.5])
-            col_info.markdown(f'<div class="wms-card"><b>{regel["titel"]}</b><br>{regel["beschreibung"]}<br><small style="color:gray;">{evidenz_text}</small><br>{status_badge}</div>', unsafe_allow_html=True)
+            with col_info:
+                st.markdown(f'**{regel["titel"]}**\n\n{regel["beschreibung"]}')
+                st.markdown(f'<small style="color:gray;">{evidenz_text}</small>', unsafe_allow_html=True)
+                if status_badge:
+                    st.markdown(f'<br>{status_badge}', unsafe_allow_html=True)
             
-            if status is None:
-                if col_btn.button("Axiom freigeben", key=f"akz_{rid}", icon=":material/check:", use_container_width=True):
-                    st.session_state.regel_status[rid] = "akzeptiert"
-                    st.rerun()
-                if col_btn.button("Axiom verwerfen", key=f"abl_{rid}", icon=":material/close:", use_container_width=True):
-                    st.session_state.regel_status[rid] = "abgelehnt"
-                    st.rerun()
-            else:
-                col_btn.markdown("<p style='text-align:center; font-weight:600; margin-top:1.5rem;'>Status: Geprüft</p>", unsafe_allow_html=True)
+            with col_btn:
+                if status is None:
+                    if st.button("Axiom freigeben", key=f"akz_{rid}", icon=":material/check:", use_container_width=True):
+                        st.session_state.regel_status[rid] = "akzeptiert"
+                        st.rerun()
+                    if st.button("Axiom verwerfen", key=f"abl_{rid}", icon=":material/close:", use_container_width=True):
+                        st.session_state.regel_status[rid] = "abgelehnt"
+                        st.rerun()
+                else:
+                    st.markdown("<p style='text-align:center; font-weight:600; margin-top:1rem;'>Status: Geprüft</p>", unsafe_allow_html=True)
 
 def tab_tickets_admin():
-    """Vollständig reaktiver Ticket-Tab. Keine Layout-Verschachtelungen, läuft absolut stabil on cloud."""
-    st.markdown("<br><p style='color: var(--text-grau); margin-bottom: 2rem;'>Zentrale Verwaltung aller Support-Eskalationen aus dem Mitarbeiterstamm. Änderungen werden per Klick direkt live verarbeitet.</p>", unsafe_allow_html=True)
+    """Hochgradig stabiler Cloud-Tab. Nutzt absolut ausfallsichere native Layout-Kombinationen."""
+    st.markdown("<br><p style='color: #7f8c8d; margin-bottom: 2rem;'>Zentrale Verwaltung aller Support-Eskalationen aus dem Mitarbeiterstamm. Änderungen werden direkt und sicher live verarbeitet.</p>", unsafe_allow_html=True)
     if not st.session_state.tickets:
         st.info("Das Ticket-System verzeichnet aktuell keine offenen Vorgänge.")
     else:
         for tk in reversed(st.session_state.tickets):
             auswahl_key = f"select_{tk['id']}"
-            badge_html = '<span class="badge badge-nein">STATUS: OFFEN</span>' if tk['status'] == "Offen" else ('<span class="badge badge-neutral">STATUS: IN BEARBEITUNG</span>' if tk['status'] == "In Bearbeitung" else '<span class="badge badge-ok">STATUS: GESCHLOSSEN</span>')
             
-            # Trennung von strukturellem Layout (Streamlit Columns) und optischem Styling (HTML Card)
-            col_t1, col_t2 = st.columns([3, 1.2])
-            col_t1.markdown(f'<div class="wms-card"><b>Vorgang #{tk["id"]} | {tk["titel"]}</b><br>{tk["beschreibung"]}<br><small style="color:gray;">Gemeldet von: {tk["ersteller"]}</small><br>{badge_html}</div>', unsafe_allow_html=True)
+            if tk['status'] == "Offen":
+                badge_html = '<span style="background-color: #fee2e2; color: #b91c1c; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">STATUS: OFFEN</span>'
+            elif tk['status'] == "In Bearbeitung":
+                badge_html = '<span style="background-color: #f3f4f6; color: #4b5563; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">STATUS: IN BEARBEITUNG</span>'
+            else:
+                badge_html = '<span style="background-color: #eaf4ee; color: #12734a; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">STATUS: GESCHLOSSEN</span>'
             
-            col_t2.selectbox(
-                "Status ändern",
-                options=["Offen", "In Bearbeitung", "Geschlossen"],
-                index=["Offen", "In Bearbeitung", "Geschlossen"].index(tk['status']),
-                key=auswahl_key,
-                label_visibility="collapsed",
-                on_change=sichere_ticket_status_direkt,
-                args=(tk['id'], auswahl_key)
-            )
-            st.markdown("<br>", unsafe_allow_html=True)
+            with st.container(border=True):
+                col_t1, col_t2 = st.columns([3, 1.2])
+                with col_t1:
+                    st.markdown(f"**Vorgang #{tk['id']} | {tk['titel']}**")
+                    st.markdown(f"{tk['beschreibung']}")
+                    st.markdown(f"<small style='color:gray;'>Gemeldet von: {tk['ersteller']}</small>", unsafe_allow_html=True)
+                    st.markdown(badge_html, unsafe_allow_html=True)
+                
+                with col_t2:
+                    st.selectbox(
+                        "Status ändern",
+                        options=["Offen", "In Bearbeitung", "Geschlossen"],
+                        index=["Offen", "In Bearbeitung", "Geschlossen"].index(tk['status']),
+                        key=auswahl_key,
+                        on_change=sichere_ticket_status_direkt,
+                        args=(tk['id'], auswahl_key)
+                    )
 
 def tab_metriken_admin():
-    st.markdown("<br><p style='color: var(--text-grau); margin-bottom: 2rem;'>Telemetrie-Daten und Leistungskennzahlen des On-Premise Betriebs.</p>", unsafe_allow_html=True)
+    st.markdown("<br><p style='color: #7f8c8d; margin-bottom: 2rem;'>Telemetrie-Daten und Leistungskennzahlen des On-Premise Betriebs.</p>", unsafe_allow_html=True)
     m1, m2, m3, m4 = st.columns(4)
     
-    with m1: st.markdown(f'<div class="wms-card"><div class="metrik-wert">{METRIKEN["serverauslastung_pct"]} %</div><div class="metrik-label"><span class="icon" style="font-size:16px;">dns</span> Infrastrukturlast</div></div>', unsafe_allow_html=True)
-    with m2: st.markdown(f'<div class="wms-card"><div class="metrik-wert">{METRIKEN["antwortlatenz_ms"]} ms</div><div class="metrik-label"><span class="icon" style="font-size:16px;">timer</span> Ø Inferenzzeit</div></div>', unsafe_allow_html=True)
-    with m3: st.markdown(f'<div class="wms-card"><div class="metrik-wert">{METRIKEN["maskierte_pii"]:,}</div><div class="metrik-label"><span class="icon" style="font-size:16px;">policy</span> Gefilterte PII</div></div>'.replace(",", "."), unsafe_allow_html=True)
-    with m4: st.markdown(f'<div class="wms-card"><div class="metrik-wert">{METRIKEN["anfragen_heute"]}</div><div class="metrik-label"><span class="icon" style="font-size:16px;">forum</span> Anfragen heute</div></div>', unsafe_allow_html=True)
+    with m1:
+        with st.container(border=True):
+            st.markdown(f'<div class="metrik-wert" style="text-align:center;">{METRIKEN["serverauslastung_pct"]} %</div>', unsafe_allow_html=True)
+            st.markdown('<div class="metrik-label" style="text-align:center;"><span class="icon" style="font-size:16px;">dns</span> Infrastrukturlast</div>', unsafe_allow_html=True)
+    with m2:
+        with st.container(border=True):
+            st.markdown(f'<div class="metrik-wert" style="text-align:center;">{METRIKEN["antwortlatenz_ms"]} ms</div>', unsafe_allow_html=True)
+            st.markdown('<div class="metrik-label" style="text-align:center;"><span class="icon" style="font-size:16px;">timer</span> Ø Inferenzzeit</div>', unsafe_allow_html=True)
+    with m3:
+        with st.container(border=True):
+            st.markdown(f'<div class="metrik-wert" style="text-align:center;">{METRIKEN["maskierte_pii"]:,}</div>'.replace(",", "."), unsafe_allow_html=True)
+            st.markdown('<div class="metrik-label" style="text-align:center;"><span class="icon" style="font-size:16px;">policy</span> Gefilterte PII</div>', unsafe_allow_html=True)
+    with m4:
+        with st.container(border=True):
+            st.markdown(f'<div class="metrik-wert" style="text-align:center;">{METRIKEN["anfragen_heute"]}</div>', unsafe_allow_html=True)
+            st.markdown('<div class="metrik-label" style="text-align:center;"><span class="icon" style="font-size:16px;">forum</span> Anfragen heute</div>', unsafe_allow_html=True)
     
     st.divider()
     col_fp, col_fn, col_bars = st.columns([1, 1, 3])
@@ -547,7 +513,8 @@ def tab_metriken_admin():
     st.divider()
     st.markdown("**Eingereichte Freitext-Rückmeldungen der Belegschaft:**")
     for fbt in reversed(st.session_state.eingereichtes_feedback):
-        st.markdown(f'<div class="wms-card"><span class="icon" style="color:var(--text-grau); margin-right:8px;">chat_bubble</span> {fbt}</div>', unsafe_allow_html=True)
+        with st.container(border=True):
+            st.markdown(f'<span class="icon" style="color:#7f8c8d; margin-right:8px;">chat_bubble</span> {fbt}', unsafe_allow_html=True)
 
 def render_office_plugin():
     st.markdown("### :material/description: Dokumenten-Integration – Office Plugin")
@@ -560,12 +527,15 @@ def render_office_plugin():
         st.text_area("Dokumentinhalt", value="KOMM Ambulante Dienste e.V.\nPflegeeinsatzprotokoll\n\nDatum:           14.06.2026\nMitarbeiter/in:  [geschwärzt – PII]\nKlient/in:       [geschwärzt – PII]\nPflegegrad:      2\n\nErbrachte Leistungen:\n  - Grundpflege (Körperpflege, Ankleiden)\n  - Medikamentengabe nach ärztlicher Anordnung\n  - Mobilisation und Sturzprävention\n\nBesonderheiten / Abweichungen vom Hilfeplan:\n  Keine Abweichungen festgestellt.\n\nNächster Einsatz: 15.06.2026, 08:00 Uhr\n\nUnterschrift: ___________________________________", height=380, disabled=True, label_visibility="collapsed")
         
     with col_panel:
-        st.markdown('<div class="wms-card"><div class="onto-titel"><span class="icon">neurology</span> WMS Systemassistenz</div><strong>Extrahierte Parameter:</strong><br>- Pflegegrad 2<br>- Grundpflege<br>- Medikamentengabe<hr><strong>Korrelierte Richtlinien:</strong><br>1. Abrechnungsregeln Pflegegrad 2 (§ 36 SGB XI)<br>2. Dokumentationsstandards MDK<br>3. Protokollierungspflicht Medikamente</div>', unsafe_allow_html=True)
-        if st.button("Richtlinie einsehen", icon=":material/visibility:", use_container_width=True):
-            st.info("Der direkte Dokumenten-Abruf ist in der Sandbox-Umgebung deaktiviert.")
-        if st.button("Compliance-Scan ausführen", icon=":material/fact_check:", use_container_width=True):
-            st.info("Das Compliance-Modul benötigt die Freischaltung der REST-Schnittstellen.")
-        st.caption("Verbindungsstatus: API Offline (Simulation)")
+        with st.container(border=True):
+            st.markdown('### :material/psychology: WMS Systemassistenz')
+            st.markdown('**Extrahierte Parameter:**\n- Pflegegrad 2\n- Grundpflege\n- Medikamentengabe\n\n---\n**Korrelierte Richtlinien:**\n1. Abrechnungsregeln Pflegegrad 2 (§ 36 SGB XI)\n2. Dokumentationsstandards MDK\n3. Protokollierungspflicht Medikamente')
+            
+            if st.button("Richtlinie einsehen", icon=":material/visibility:", use_container_width=True):
+                st.info("Der direkte Dokumenten-Abruf ist in der Sandbox-Umgebung deaktiviert.")
+            if st.button("Compliance-Scan ausführen", icon=":material/fact_check:", use_container_width=True):
+                st.info("Das Compliance-Modul benötigt die Freischaltung der REST-Schnittstellen.")
+            st.caption("Verbindungsstatus: API Offline (Simulation)")
 
 
 # --- ABSCHNITT 7: CORE ORCHESTRATOR (HAUPT-ROUTING) ---
@@ -573,7 +543,7 @@ def main():
     load_corporate_styling()
     init_session()
 
-    # Login-Guard
+    # Login-Guard (Zentraler Einstiegspunkt)
     if not st.session_state.eingeloggt:
         render_login_screen()
         return
@@ -581,16 +551,16 @@ def main():
     # Sidebar rendern
     render_sidebar()
     
-    # Haupt-Header-Leiste
+    # Haupt-Header
     st.markdown('<div class="wms-header"><span class="icon">local_hospital</span><span><strong>KOMM Ambulante Dienste e.V.</strong> &nbsp;|&nbsp; Wissensmanagementsystem</span></div>', unsafe_allow_html=True)
 
-    # Seiten-Routing
+    # Weichensteuerung für Seiten
     if st.session_state.aktuelle_seite == "profil":
         view_profile_page()
     elif st.session_state.modus == "Dokumenten-Integration (Office Plugin)":
         render_office_plugin()
     else:
-        # Rollenbasierte Tab-Generierung (Isoliert, um Überlastungsfehler auf Cloud-Servern zu blockieren)
+        # Rollenbasierte Tab-Generierung (Flache Strukturen sichern die Inferenz auf Cloud-Servern ab)
         if st.session_state.rolle == "Administrator":
             t_chat, t_ticket, t_onto, t_regeln, t_tadmin, t_metrik = st.tabs([
                 ":material/forum: Wissensabfrage", ":material/support_agent: Support",
