@@ -530,6 +530,16 @@ def init_session():
 
 init_session()
 
+
+# Callback zum Speichern des Ticket-Status (Verhindert Tab-Verlust beim Neuladen)
+def speichere_ticket_status(ticket_id, widget_key):
+    neuer_status = st.session_state[widget_key]
+    for ticket in st.session_state.tickets:
+        if ticket["id"] == ticket_id:
+            ticket["status"] = neuer_status
+            break
+
+
 # =============================================================================
 # ABSCHNITT 4: LOGIN-BILDSCHIRM (Zugriffskontrolle)
 # =============================================================================
@@ -1166,19 +1176,26 @@ else:
                             st.markdown(badge_html, unsafe_allow_html=True)
 
                         with col_t2:
-                            # FORM-BASIERTES SPEICHERN: Widget hat keinen eigenen 'key' mehr, der Werte vorab ungewollt cached.
-                            # Der eindeutige unsichtbare Label-Text schützt vor dem "Duplicate Widget ID"-Crash!
+                            # Nutzung von st.form mit einem on_click CallBack, um die Seite an Ort und Stelle
+                            # neu aufzubauen und den State des aktiven Reiters nicht zu verlieren.
+                            status_optionen = ["Offen", "In Bearbeitung", "Geschlossen"]
+                            auswahl_key = f"select_status_{tk['id']}"
+                            
                             with st.form(key=f"status_form_{tk['id']}", clear_on_submit=False):
-                                status_optionen = ["Offen", "In Bearbeitung", "Geschlossen"]
-                                auswahl = st.selectbox(
+                                st.selectbox(
                                     f"Vorgangsstatus für Ticket {tk['id']}",
                                     options=status_optionen,
                                     index=status_optionen.index(tk['status']),
+                                    key=auswahl_key,
                                     label_visibility="collapsed"
                                 )
-                                if st.form_submit_button("Speichern", use_container_width=True):
-                                    tk['status'] = auswahl
-                                    st.rerun()
+                                # Button nutzt Callback Funktion "speichere_ticket_status"
+                                st.form_submit_button(
+                                    "Speichern", 
+                                    use_container_width=True,
+                                    on_click=speichere_ticket_status,
+                                    args=(tk['id'], auswahl_key)
+                                )
                         st.markdown('</div>', unsafe_allow_html=True)
 
 
