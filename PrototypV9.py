@@ -1200,17 +1200,24 @@ else:
                             with col_t2:
                                 # Dynamischer Key für die Selectbox
                                 box_key = f"status_select_{tk['id']}"
-                                
-                                # Dropdown nutzt jetzt sicher den Callback ohne Rerun-Crash
-                                st.selectbox(
+                                status_optionen = ["Offen", "In Bearbeitung", "Geschlossen"]
+    
+    # 1. Wir fangen die Auswahl direkt in einer Variablen ab (OHNE on_change)
+                                auswahl = st.selectbox(
                                     "Vorgangsstatus",
-                                    options=["Offen", "In Bearbeitung", "Geschlossen"],
-                                    index=["Offen", "In Bearbeitung", "Geschlossen"].index(tk['status']),
+                                    options=status_optionen,
+                                    index=status_optionen.index(tk['status']),
                                     key=box_key,
-                                    label_visibility="collapsed",
-                                    on_change=update_ticket_status,
-                                    args=(tk['id'], box_key)
+                                    label_visibility="collapsed"
                                 )
+    
+    # 2. Wenn sich die Auswahl vom aktuellen Ticket-Status unterscheidet:
+    #    Direkt updaten und einen sauberen, top-down Rerun erzwingen!
+                                if auswahl != tk['status']:
+                                    tk['status'] = auswahl
+                                    st.rerun()
+   
+    
 
 
             # --- TAB: METRIKEN ---
