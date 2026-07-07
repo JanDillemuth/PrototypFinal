@@ -854,40 +854,8 @@ else:
                 with col_btn:
                     absenden = st.form_submit_button("Senden", icon=":material/send:", use_container_width=True)
 
-            # --- Anzeige des aktuellen Modus direkt unter dem Senden-Button ---
-            col_lbl, col_space_lbl = st.columns([3, 7])
-            with col_lbl:
-                st.text_input("Aktiver KI-Modus:", value=st.session_state.ki_modus, disabled=True)
-
-            if absenden and freitext.strip():
-                if "Eco" in st.session_state.ki_modus:
-                    wartezeit = 1.0 
-                    lade_text = '<span class="icon">energy_savings_leaf</span> Eco-Modus aktiv: Schnelle Verarbeitung läuft ...'
-                elif "Deep-Thinking" in st.session_state.ki_modus:
-                    wartezeit = 3.5
-                    lade_text = '<span class="icon">psychology</span> Analytischer Modus: Tiefgreifende SGB-Prüfung läuft ...'
-                else:
-                    wartezeit = 2.0
-                    lade_text = '<span class="icon">memory</span> Neuro-Symbolische Verarbeitung läuft ...'
-
-                lade_platzhalter = st.empty()
-                lade_platzhalter.markdown(f"""
-                <div class="loader-container">
-                    <div class="loader-text">{lade_text}</div>
-                    <div class="modern-loader"></div>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                time.sleep(wartezeit)
-                lade_platzhalter.empty()
-
-                eintrag = {
-                    "frage": freitext.strip(),
-                    "antwort": PLATZHALTER_ANTWORT,
-                }
-                st.session_state.chat_verlauf.append(eintrag)
-                st.rerun()
-
+            
+            
 
         # --- TAB: SUPPORT-TICKET ERSTELLEN ---
         with tab_ticket:
