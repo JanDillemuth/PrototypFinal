@@ -524,13 +524,62 @@ def init_session():
 
 init_session()
 
-# Callback-Funktion: Aktualisiert den Status sicher, ohne die Layout-Hierarchie zu sprengen
+# Callback-Funktion: Aktualisiert den Status sicher
 def speichere_ticket_status(ticket_id, widget_key):
     neuer_status = st.session_state[widget_key]
     for ticket in st.session_state.tickets:
         if ticket["id"] == ticket_id:
             ticket["status"] = neuer_status
             break
+
+# =============================================================================
+# NEU: FRAGMENT FÜR TICKET-VERWALTUNG (Verhindert kompletten Tab-Rerun)
+# =============================================================================
+@st.fragment
+def render_admin_tickets():
+    if not st.session_state.tickets:
+        st.info("Das Ticket-System verzeichnet aktuell keine offenen Vorgänge.")
+    else:
+        for tk in reversed(st.session_state.tickets):
+            with st.container(border=True):
+                col_t1, col_t2 = st.columns([3, 1.2])
+                
+                with col_t1:
+                    st.markdown(f"**Vorgang #{tk['id']} | {tk['titel']}**")
+                    st.markdown(f"{tk['beschreibung']}")
+                    st.caption(f"Gemeldet von: {tk['ersteller']}")
+
+                    if tk['status'] == "Offen":
+                        st.markdown('<span class="badge badge-nein">STATUS: OFFEN</span>', unsafe_allow_html=True)
+                    elif tk['status'] == "In Bearbeitung":
+                        st.markdown('<span class="badge badge-neutral">STATUS: IN BEARBEITUNG</span>', unsafe_allow_html=True)
+                    else:
+                        st.markdown('<span class="badge badge-ok">STATUS: GESCHLOSSEN</span>', unsafe_allow_html=True)
+
+                with col_t2:
+                    auswahl_key = f"select_status_{tk['id']}"
+                    status_optionen = ["Offen", "In Bearbeitung", "Geschlossen"]
+                    
+                    # Da wir im Fragment sind, wird nur dieses Fragment neu gerendert
+                    aktuelle_auswahl = st.selectbox(
+                        "Status ändern",
+                        options=status_optionen,
+                        index=status_optionen.index(tk['status']),
+                        key=auswahl_key,
+                        label_visibility="collapsed"
+                    )
+                    
+                    # Überprüfen, ob sich der Wert wirklich geändert hat
+                    ist_geaendert = (aktuelle_auswahl != tk['status'])
+                    
+                    st.button(
+                        "Speichern", 
+                        key=f"btn_save_{tk['id']}",
+                        use_container_width=True,
+                        disabled=not ist_geaendert, # Button nur aktiv bei Änderung
+                        on_click=speichere_ticket_status,
+                        args=(tk['id'], auswahl_key)
+                    )
 
 
 # =============================================================================
@@ -1136,47 +1185,9 @@ else:
                     "Zentrale Verwaltung aller Support-Eskalationen aus dem Mitarbeiterstamm."
                     "</p>", unsafe_allow_html=True
                 )
-
-                if not st.session_state.tickets:
-                    st.info("Das Ticket-System verzeichnet aktuell keine offenen Vorgänge.")
-                else:
-                    for tk in reversed(st.session_state.tickets):
-                        # Nutzt den sauberen Streamlit-Container, damit die Layout-Struktur nicht zerbricht!
-                        with st.container(border=True):
-                            col_t1, col_t2 = st.columns([3, 1.2])
-                            
-                            with col_t1:
-                                st.markdown(f"**Vorgang #{tk['id']} | {tk['titel']}**")
-                                st.markdown(f"{tk['beschreibung']}")
-                                st.caption(f"Gemeldet von: {tk['ersteller']}")
-
-                                if tk['status'] == "Offen":
-                                    st.markdown('<span class="badge badge-nein">STATUS: OFFEN</span>', unsafe_allow_html=True)
-                                elif tk['status'] == "In Bearbeitung":
-                                    st.markdown('<span class="badge badge-neutral">STATUS: IN BEARBEITUNG</span>', unsafe_allow_html=True)
-                                else:
-                                    st.markdown('<span class="badge badge-ok">STATUS: GESCHLOSSEN</span>', unsafe_allow_html=True)
-
-                            with col_t2:
-                                # Die Form verhindert ab sofort, dass eine bloße Dropdown-Auswahl die Seite aktualisiert.
-                                # Erst der Speichern-Button löst den Rerun aus und übernimmt den Wert endgültig.
-                                auswahl_key = f"select_status_{tk['id']}"
-                                with st.form(key=f"status_form_{tk['id']}", clear_on_submit=False):
-                                    status_optionen = ["Offen", "In Bearbeitung", "Geschlossen"]
-                                    st.selectbox(
-                                        "Status ändern",
-                                        options=status_optionen,
-                                        index=status_optionen.index(tk['status']),
-                                        key=auswahl_key,
-                                        label_visibility="collapsed"
-                                    )
-                                    # form_submit_button löst nur dann ein True aus, wenn er geklickt wird
-                                    st.form_submit_button(
-                                        "Speichern", 
-                                        use_container_width=True,
-                                        on_click=speichere_ticket_status,
-                                        args=(tk['id'], auswahl_key)
-                                    )
+                
+                # Der Aufruf des st.fragment-Wrappers (löst das Problem der untereinander gerenderten Tabs)
+                render_admin_tickets()
 
 
             # --- TAB: METRIKEN ---
