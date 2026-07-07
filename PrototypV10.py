@@ -417,7 +417,7 @@ BEISPIELFRAGEN = {
             "Pflegegrad 1 berechtigt zur Inanspruchnahme des Entlastungsbetrages "
             "gemäß § 45b SGB XI in Höhe von 125 Euro monatlich. "
             "<span class='onto-ref'>1<span class='tooltiptext'><strong>📌 Abrechnungsregel Pflegegrad 1</strong><br>Ontologie erzwang Verweis auf § 45b SGB XI. Sachleistungen wurden logisch ausgeschlossen.</span></span> "
-            "Eine Anerkennung als Pflegeleistung im Sinne der Sachleistungsvergabe (§ 36 SGB XI) is "
+            "Eine Anerkennung als Pflegeleistung im Sinne der Sachleistungsvergabe (§ 36 SGB XI) ist "
             "bei Pflegegrad 1 nicht möglich. Die Abrechnung erfolgt ausschließlich "
             "über den Entlastungsbetrag direkt mit die Pflegekasse. Interne "
             "Abrechnungsfrist: bis zum 5. des Folgemonats. "
@@ -488,7 +488,7 @@ METRIKEN = {
 
 
 # =============================================================================
-# ABSCHNITT 3: SESSION STATE INITIALISIERUNG & ZUWEISUNGS-FUNKTION
+# ABSCHNITT 3: SESSION STATE INITIALISIERUNG & ZUWEISUNGS-FUNKTIONEN
 # =============================================================================
 def init_session():
     defaults = {
@@ -498,6 +498,7 @@ def init_session():
         "aktuelle_seite": "main",
         "modus": "Web UI Chat Interface",
         "ki_modus": "Ausgewogen (Standard)",
+        "chat_freitext_value": "",
         "chat_verlauf": [],
         "feedback": {},
         "eingereichtes_feedback": [
@@ -631,15 +632,12 @@ with st.sidebar:
     
     st.divider()
 
-    # --- GEÄNDERT: Schnittstellen-Modus über stabile Buttons und Textfeld ---
     if st.session_state.aktuelle_seite == "main":
         st.markdown("**Schnittstellen-Modus**")
         
-        # Schreibgeschütztes Textfeld zeigt den aktuellen Zustand
         st.text_input("Aktiver Modus:", value=st.session_state.modus, disabled=True, key="wms_aktiv_modus_txt")
         st.markdown("<div style='margin-bottom: 0.4rem;'></div>", unsafe_allow_html=True)
         
-        # Button 1: Web UI Chat Interface
         if st.session_state.modus == "Web UI Chat Interface":
             if st.button("Web UI Chat Interface", icon=":material/forum:", use_container_width=True):
                 pass
@@ -650,7 +648,6 @@ with st.sidebar:
                 st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
-        # Button 2: Dokumenten-Integration
         if st.session_state.modus == "Dokumenten-Integration (Office Plugin)":
             if st.button("Dokumenten-Integration", icon=":material/description:", use_container_width=True):
                 pass
@@ -682,9 +679,6 @@ st.markdown(
 # ABSCHNITT 7: ROUTING (Profil oder WMS)
 # =============================================================================
 
-# -----------------------------------------------------------------------
-# UNTERSEITE: BENUTZERPROFIL
-# -----------------------------------------------------------------------
 if st.session_state.aktuelle_seite == "profil":
     st.markdown("### :material/manage_accounts: Benutzerprofil & Einstellungen")
     st.markdown(
@@ -726,9 +720,6 @@ if st.session_state.aktuelle_seite == "profil":
             st.markdown('<div class="profil-header-label">Letzter Login</div>', unsafe_allow_html=True)
             st.markdown('<div class="profil-header-wert">Heute, 08:14 Uhr (IP: 192.168.10.45)</div>', unsafe_allow_html=True)
 
-# -----------------------------------------------------------------------
-# HAUPTSEITE: WMS ANWENDUNG
-# -----------------------------------------------------------------------
 else:
     if st.session_state.modus == "Web UI Chat Interface":
 
@@ -840,32 +831,61 @@ else:
 
                     st.markdown("<hr>", unsafe_allow_html=True)
 
-            with st.form(key="freitext_form", clear_on_submit=True):
-                freitext = st.text_area(
-                    "Ihre Frage",
-                    placeholder="Geben Sie hier Ihr Anliegen ein...",
-                    height=90,
-                    label_visibility="collapsed",
-                )
-                
-                col_btn, col_modus, col_space = st.columns([1.5, 2.5, 6])
-                with col_btn:
-                    absenden = st.form_submit_button("Senden", icon=":material/send:")
-                with col_modus:
-                    ki_modi = [
-                        "Ausgewogen (Standard)",
-                        "Ressourcenschonend (Eco)",
-                        "Analytisch (Deep-Thinking)"
-                    ]
-                    neuer_ki_modus = st.selectbox(
-                        "KI-Verarbeitungsmodus",
-                        options=ki_modi,
-                        index=ki_modi.index(st.session_state.ki_modus) if st.session_state.ki_modus in ki_modi else 0,
-                        label_visibility="collapsed"
-                    )
+            # --- GEÄNDERT: Formular entfernt für vollständige Button-Reaktivität ---
+            st.markdown("<p style='font-size: 0.95rem; font-weight: 600; margin-bottom: 0.5rem;'>KI-Verarbeitungsmodus wählen:</p>", unsafe_allow_html=True)
+            col_m1, col_m2, col_m3, _ = st.columns([2.5, 2.5, 3, 4])
+            
+            # Button: Ausgewogen
+            with col_m1:
+                if st.session_state.ki_modus == "Ausgewogen (Standard)":
+                    st.button("Ausgewogen (Standard)", icon=":material/balance:", use_container_width=True, key="ki_b_std")
+                else:
+                    st.markdown('<div class="btn-sekundaer">', unsafe_allow_html=True)
+                    if st.button("Ausgewogen (Standard)", icon=":material/balance:", use_container_width=True, key="ki_b_std"):
+                        st.session_state.ki_modus = "Ausgewogen (Standard)"
+                        st.rerun()
+                    st.markdown('</div>', unsafe_allow_html=True)
+
+            # Button: Eco
+            with col_m2:
+                if st.session_state.ki_modus == "Ressourcenschonend (Eco)":
+                    st.button("Ressourcenschonend (Eco)", icon=":material/energy_savings_leaf:", use_container_width=True, key="ki_b_eco")
+                else:
+                    st.markdown('<div class="btn-sekundaer">', unsafe_allow_html=True)
+                    if st.button("Ressourcenschonend (Eco)", icon=":material/energy_savings_leaf:", use_container_width=True, key="ki_b_eco"):
+                        st.session_state.ki_modus = "Ressourcenschonend (Eco)"
+                        st.rerun()
+                    st.markdown('</div>', unsafe_allow_html=True)
+
+            # Button: Deep-Thinking
+            with col_m3:
+                if st.session_state.ki_modus == "Analytisch (Deep-Thinking)":
+                    st.button("Analytisch (Deep-Thinking)", icon=":material/psychology:", use_container_width=True, key="ki_b_deep")
+                else:
+                    st.markdown('<div class="btn-sekundaer">', unsafe_allow_html=True)
+                    if st.button("Analytisch (Deep-Thinking)", icon=":material/psychology:", use_container_width=True, key="ki_b_deep"):
+                        st.session_state.ki_modus = "Analytisch (Deep-Thinking)"
+                        st.rerun()
+                    st.markdown('</div>', unsafe_allow_html=True)
+
+            st.markdown("<div style='margin-bottom: 0.8rem;'></div>", unsafe_allow_html=True)
+
+            # Freitexteingabe über Session State gebunden
+            freitext = st.text_area(
+                "Ihre Frage",
+                value=st.session_state.chat_freitext_value,
+                placeholder="Geben Sie hier Ihr Anliegen ein...",
+                height=90,
+                label_visibility="collapsed",
+                key="wms_chat_textarea_input"
+            )
+            
+            col_btn, _ = st.columns([1.5, 10.5])
+            with col_btn:
+                absenden = st.button("Senden", icon=":material/send:", use_container_width=True)
 
             if absenden and freitext.strip():
-                st.session_state.ki_modus = neuer_ki_modus
+                user_anfrage = freitext.strip()
                 
                 if "Eco" in st.session_state.ki_modus:
                     wartezeit = 1.0 
@@ -889,10 +909,13 @@ else:
                 lade_platzhalter.empty()
 
                 eintrag = {
-                    "frage": freitext.strip(),
+                    "frage": user_anfrage,
                     "antwort": PLATZHALTER_ANTWORT,
                 }
                 st.session_state.chat_verlauf.append(eintrag)
+                
+                # Inputfeld nach erfolgreichem Senden zurücksetzen
+                st.session_state.chat_freitext_value = ""
                 st.rerun()
 
 
@@ -948,7 +971,7 @@ else:
                         st.markdown('<div class="onto-titel"><span class="icon">elderly</span> Domäne: Pflege</div>', unsafe_allow_html=True)
                         st.markdown("""
 **SGB XI – Pflegeleistungen**
-- Pflegegrades 1 bis 5
+- Pflegegrade 1 bis 5
 - Sachleistungen (§ 36)
 - Entlastungsbetrag (§ 45b)
 - Verhinderungspflege (§ 39)
@@ -1163,7 +1186,6 @@ else:
                                 st.markdown(f"{tk['beschreibung']}")
                                 st.caption(f"Gemeldet von: {tk['ersteller']}")
 
-                                # Dynamische Status-Badges, passen sich synchron an
                                 if tk['status'] == "Offen":
                                     st.markdown('<span class="badge badge-nein">📋 STATUS: OFFEN</span>', unsafe_allow_html=True)
                                 elif tk['status'] == "In Bearbeitung":
@@ -1171,11 +1193,9 @@ else:
                                 else:
                                     st.markdown('<span class="badge badge-ok">✅ STATUS: GESCHLOSSEN</span>', unsafe_allow_html=True)
 
-                            # --- GEÄNDERT: Statusänderung nativ via 3 Buttons statt Selectbox ---
                             with col_t2:
                                 st.markdown("<p style='font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;'>Status ändern:</p>", unsafe_allow_html=True)
                                 
-                                # 1. Button: Offen
                                 if tk['status'] == "Offen":
                                     st.button("Offen", key=f"btn_stat_offen_{tk['id']}", use_container_width=True)
                                 else:
@@ -1185,7 +1205,6 @@ else:
                                         st.rerun()
                                     st.markdown('</div>', unsafe_allow_html=True)
                                     
-                                # 2. Button: In Bearbeitung
                                 if tk['status'] == "In Bearbeitung":
                                     st.button("In Bearbeitung", key=f"btn_stat_ib_{tk['id']}", use_container_width=True)
                                 else:
@@ -1195,7 +1214,6 @@ else:
                                         st.rerun()
                                     st.markdown('</div>', unsafe_allow_html=True)
                                     
-                                # 3. Button: Geschlossen
                                 if tk['status'] == "Geschlossen":
                                     st.button("Geschlossen", key=f"btn_stat_ges_{tk['id']}", use_container_width=True)
                                 else:
