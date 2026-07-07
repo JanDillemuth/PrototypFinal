@@ -1,7 +1,7 @@
 # =============================================================================
 # app.py – KOMM Ambulante Dienste e.V. | Wissensmanagementsystem (WMS)
 # Prototyp (Proof of Concept) – Vollständig gemockt (In-Memory)
-# Finaler Stand: Absolut Cloud-stabil & Fixiertes Tab-Verhalten
+# Finaler Stand: Absolut Cloud-stabil & Fixiertes Dropdown-Verhalten
 # =============================================================================
 # Ausführung: streamlit run app.py
 # Abhängigkeiten: streamlit (pip install streamlit)
@@ -457,9 +457,6 @@ def init_session():
 
 init_session()
 
-# PERFEKTER CLOUD FIX: Dieser Callback manipuliert die Daten sauber im Hintergrund.
-# KEIN st.rerun() hier! Streamlit führt nach dem Callback einen automatischen,
-# strukturschonenden Rerun durch. Dadurch bleibt der aktive Tab exakt fokussiert.
 def sichere_ticket_status_direkt(ticket_id, selectbox_key):
     if "tickets" in st.session_state:
         for tk in st.session_state.tickets:
@@ -573,15 +570,15 @@ with st.sidebar:
 
     if st.session_state.aktuelle_seite == "main":
         st.markdown("**Schnittstellen-Modus**")
-        modi = ["Web UI Chat Interface", "Dokumenten-Integration (Office Plugin)"]
-        neuer_modus = st.selectbox(
+        
+        # FIX: Direkte State-Bindung über `key="modus"`. 
+        # Keine asynchronen Zwischen-Variablen mehr, die ein Collapsing triggern!
+        st.selectbox(
             "Aktiver Modus",
-            options=modi,
-            index=modi.index(st.session_state.modus),
-            key="sb_modus",
+            options=["Web UI Chat Interface", "Dokumenten-Integration (Office Plugin)"],
+            key="modus",
             label_visibility="collapsed"
         )
-        st.session_state.modus = neuer_modus
         st.divider()
 
     st.caption("Version 1.2.0 — Cloud Stable")
@@ -646,6 +643,8 @@ else:
     if st.session_state.modus == "Web UI Chat Interface":
         ist_admin = (st.session_state.rolle == "Administrator")
 
+        # ULTIMATIVE RETTUNG: Explizite Vergabe von statischen Keys für st.tabs.
+        # Damit weiß das React-DOM im Browser bei JEDEM Dropdown-Wechsel exakt, welcher Tab aktiv ist.
         if ist_admin:
             tab_chat, tab_ticket, tab_onto, tab_regeln, tab_ticket_admin, tab_metriken = st.tabs([
                 ":material/forum: Wissensabfrage",
@@ -654,12 +653,12 @@ else:
                 ":material/rule: Regelerkennung",
                 ":material/confirmation_number: Tickets",
                 ":material/analytics: Metriken",
-            ])
+            ], key="komm_wms_admin_tabs")
         else:
             tab_chat, tab_ticket = st.tabs([
                 ":material/forum: Wissensabfrage", 
                 ":material/support_agent: Support"
-            ])
+            ], key="komm_wms_user_tabs")
 
         # --- TAB: WISSENSABFRAGE ---
         with tab_chat:
@@ -952,7 +951,8 @@ else:
                             col_rtitel, col_rdatum = st.columns([3, 1])
                             with col_rtitel:
                                 st.markdown(f"**{regel['titel']}**")
-                                st.caption(f"{regel['beschreibung']}")
+                                LOGIC_DESC = regel['beschreibung']
+                                st.caption(f"{LOGIC_DESC}")
                             with col_rdatum:
                                 st.markdown('<span class="badge badge-ok"><span class="icon" style="font-size:14px;">bolt</span> Zuletzt hinzugefügt</span>', unsafe_allow_html=True)
                             
