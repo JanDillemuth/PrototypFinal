@@ -1,7 +1,7 @@
 # =============================================================================
 # app.py – KOMM Ambulante Dienste e.V. | Wissensmanagementsystem (WMS)
 # Prototyp (Proof of Concept) – Vollständig gemockt (In-Memory)
-# Finaler Stand: Native Streamlit-Container & Stabile Cloud-Konformität
+# Finaler Stand: Cloud-optimierte Stabilität & Sichere Callbacks
 # =============================================================================
 # Ausführung: streamlit run app.py
 # Abhängigkeiten: streamlit (pip install streamlit)
@@ -33,9 +33,9 @@ LOGO_BASE64 = get_image_base64("Komm.png")
 
 
 # =============================================================================
-# ABSCHNITT 1: CORPORATE DESIGN & CSS (Cloud-optimierter, sicherer Stand)
+# ABSCHNITT 1: CORPORATE DESIGN & CSS (Isoliert für maximale Cloud-Stabilität)
 # =============================================================================
-st.markdown("""
+st.html("""
 <style>
     /* Google Material Symbols (Rounded) importieren für professionelle Piktogramme */
     @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0');
@@ -71,7 +71,7 @@ st.markdown("""
         -webkit-font-smoothing: antialiased;
     }
 
-    /* Sicheres Button-Styling ohne strukturelle Layout-Eingriffe */
+    /* Minimal-invasive Button-Abrundung */
     .stButton > button, .stFormSubmitButton > button {
         border-radius: var(--radius-klein) !important;
         font-weight: 600 !important;
@@ -241,7 +241,6 @@ st.markdown("""
         gap: 12px;
     }
 
-    /* Bezeichner & Titel innerhalb nativer Cards */
     .onto-titel {
         font-size: 1.1rem;
         font-weight: 700;
@@ -276,7 +275,7 @@ st.markdown("""
     .profil-header-label { font-size: 0.8rem; text-transform: uppercase; color: var(--text-grau); letter-spacing: 0.05em; margin-bottom: 0.2rem;}
     .profil-header-wert { font-size: 1.1rem; font-weight: 600; color: var(--text-dunkel); margin-bottom: 1.2rem;}
 
-    /* Trennlinien */
+    /* Verblassende Trennlinien */
     hr { 
         border: 0 !important; 
         height: 1px !important; 
@@ -284,7 +283,7 @@ st.markdown("""
         margin: 2rem 0 !important; 
     }
     
-    /* Inline Tooltips für Ontologie-Verweise */
+    /* ONTOLOGIE-REFERENZEN (INLINE TOOLTIPS) */
     .onto-ref {
         display: inline-flex;
         align-items: center;
@@ -343,7 +342,7 @@ st.markdown("""
         transform: translateX(-50%) translateY(0);
     }
 </style>
-""", unsafe_allow_html=True)
+""")
 
 
 # =============================================================================
@@ -357,7 +356,7 @@ BEISPIELFRAGEN = {
             "Pflegegrad 1 berechtigt zur Inanspruchnahme des Entlastungsbetrages "
             "gemäß § 45b SGB XI in Höhe von 125 Euro monatlich. "
             "<span class='onto-ref'>1<span class='tooltiptext'><strong>📌 Abrechnungsregel Pflegegrad 1</strong><br>Ontologie erzwang Verweis auf § 45b SGB XI. Sachleistungen wurden logisch ausgeschlossen.</span></span> "
-            "Eine Anerkennung als Pflegeleistung im Sinne der Sachleistungsvergabe (§ 36 SGB XI) is "
+            "Eine Anerkennung als Pflegeleistung im Sinne der Sachleistungsvergabe (§ 36 SGB XI) ist "
             "bei Pflegegrad 1 nicht möglich. Die Abrechnung erfolgt ausschließlich "
             "über den Entlastungsbetrag direkt mit die Pflegekasse. Interne "
             "Abrechnungsfrist: bis zum 5. des Folgemonats. "
@@ -458,15 +457,15 @@ def init_session():
 
 init_session()
 
+# CRITICAL CLOUD FIX: Explizites st.rerun() am Ende des Callbacks zwingt die
+# Engine zu einem sauberen Neuaufbau, wodurch die Tab-Struktur intakt bleibt.
 def sichere_ticket_status_direkt(ticket_id, selectbox_key):
     gewaehlter_status = st.session_state[selectbox_key]
-    counter = 0
-    while counter < len(st.session_state.tickets):
-        if st.session_state.tickets[counter]['id'] == ticket_id:
-            st.session_state.tickets[counter]['status'] = gewaehlter_status
+    for tk in st.session_state.tickets:
+        if tk['id'] == ticket_id:
+            tk['status'] = gewaehlter_status
             break
-        counter += 1
-    counter = 0
+    st.rerun()
 
 
 # =============================================================================
@@ -585,7 +584,7 @@ with st.sidebar:
         st.session_state.modus = neuer_modus
         st.divider()
 
-    st.caption("Version 1.2.0 — Cloud Secured")
+    st.caption("Version 1.2.0 — Cloud Stable")
     st.caption("Stand: 2026")
 
 
@@ -604,9 +603,6 @@ st.markdown(
 # ABSCHNITT 7: ROUTING (Profil oder WMS)
 # =============================================================================
 
-# -----------------------------------------------------------------------
-# UNTERSEITE: BENUTZERPROFIL
-# -----------------------------------------------------------------------
 if st.session_state.aktuelle_seite == "profil":
     st.markdown("### :material/manage_accounts: Benutzerprofil & Einstellungen")
     st.markdown(
@@ -646,13 +642,9 @@ if st.session_state.aktuelle_seite == "profil":
             st.markdown('<div class="profil-header-label">Letzter Login</div>', unsafe_allow_html=True)
             st.markdown('<div class="profil-header-wert">Heute, 08:14 Uhr (IP: 192.168.10.45)</div>', unsafe_allow_html=True)
 
-# -----------------------------------------------------------------------
-# HAUPTSEITE: WMS ANWENDUNG
-# -----------------------------------------------------------------------
 else:
     if st.session_state.modus == "Web UI Chat Interface":
-
-        ist_admin = st.session_state.rolle == "Administrator"
+        ist_admin = (st.session_state.rolle == "Administrator")
 
         if ist_admin:
             tab_chat, tab_ticket, tab_onto, tab_regeln, tab_ticket_admin, tab_metriken = st.tabs([
@@ -669,7 +661,7 @@ else:
                 ":material/support_agent: Support"
             ])
 
-        # --- TAB: WISSENSABFRAGE (Chat-Interface) ---
+        # --- TAB: WISSENSABFRAGE ---
         with tab_chat:
             st.markdown("<br>", unsafe_allow_html=True)
             st.markdown(
@@ -693,7 +685,7 @@ else:
                         st.session_state.chat_verlauf.append(eintrag)
                         st.rerun()
 
-            st.markdown("---")
+                    st.markdown("---")
 
             if not st.session_state.chat_verlauf:
                 st.info("Noch keine Anfragen im aktuellen Verlauf vorhanden. Wählen Sie eine der oberen Beispielfragen oder tippen Sie einen Freitext ein.")
