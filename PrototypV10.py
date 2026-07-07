@@ -1,7 +1,7 @@
 # =============================================================================
 # app.py – KOMM Ambulante Dienste e.V. | Wissensmanagementsystem (WMS)
 # Prototyp (Proof of Concept) – Vollständig gemockt (In-Memory)
-# Finaler Stand: Cloud-optimierte Stabilität & Sichere Callbacks
+# Finaler Stand: Absolut Cloud-stabil ohne Callback-Warnungen
 # =============================================================================
 # Ausführung: streamlit run app.py
 # Abhängigkeiten: streamlit (pip install streamlit)
@@ -427,7 +427,7 @@ METRIKEN = {
 
 
 # =============================================================================
-# ABSCHNITT 3: SESSION STATE INITIALISIERUNG & ON-CLICK ACTION
+# ABSCHNITT 3: SESSION STATE INITIALISIERUNG & TOP-LEVEL SYNCHRONISATION
 # =============================================================================
 def init_session():
     defaults = {
@@ -457,15 +457,14 @@ def init_session():
 
 init_session()
 
-# CRITICAL CLOUD FIX: Explizites st.rerun() am Ende des Callbacks zwingt die
-# Engine zu einem sauberen Neuaufbau, wodurch die Tab-Struktur intakt bleibt.
-def sichere_ticket_status_direkt(ticket_id, selectbox_key):
-    gewaehlter_status = st.session_state[selectbox_key]
+# CLOUD FIX: Synchronisiere Ticket-Status VOR dem Rendern der Tabs.
+# Da Streamlit bei Interaktion automatisch neu lädt, lesen wir hier den Zustand
+# der Selectboxen ab. Das verhindert Tab-Resets und entfernt jede Warnung!
+if "tickets" in st.session_state:
     for tk in st.session_state.tickets:
-        if tk['id'] == ticket_id:
-            tk['status'] = gewaehlter_status
-            break
-    st.rerun()
+        auswahl_key = f"select_{tk['id']}"
+        if auswahl_key in st.session_state:
+            tk['status'] = st.session_state[auswahl_key]
 
 
 # =============================================================================
@@ -685,7 +684,7 @@ else:
                         st.session_state.chat_verlauf.append(eintrag)
                         st.rerun()
 
-                    st.markdown("---")
+            st.markdown("---")
 
             if not st.session_state.chat_verlauf:
                 st.info("Noch keine Anfragen im aktuellen Verlauf vorhanden. Wählen Sie eine der oberen Beispielfragen oder tippen Sie einen Freitext ein.")
@@ -780,13 +779,13 @@ else:
                 st.session_state.ki_modus = neuer_ki_modus
                 
                 if "Eco" in st.session_state.ki_modus:
-                    wartezeit = 1.0 
+                    warp = 1.0 
                     lade_text = '<span class="icon">energy_savings_leaf</span> Eco-Modus aktiv: Schnelle Verarbeitung läuft ...'
                 elif "Deep-Thinking" in st.session_state.ki_modus:
-                    wartezeit = 3.5
+                    warp = 3.5
                     lade_text = '<span class="icon">psychology</span> Analytischer Modus: Tiefgreifende SGB-Prüfung läuft ...'
                 else:
-                    wartezeit = 2.0
+                    warp = 2.0
                     lade_text = '<span class="icon">memory</span> Neuro-Symbolische Verarbeitung läuft ...'
 
                 lade_platzhalter = st.empty()
@@ -797,7 +796,7 @@ else:
                 </div>
                 """, unsafe_allow_html=True)
                 
-                time.sleep(wartezeit)
+                time.sleep(warp)
                 lade_platzhalter.empty()
 
                 eintrag = {
@@ -1086,13 +1085,13 @@ else:
                             with col_t2:
                                 status_optionen = ["Offen", "In Bearbeitung", "Geschlossen"]
                                 
+                                # NO CALLBACK REQUIRED: `key` bindet die Auswahl direkt an den state.
+                                # Streamlit updatet nativ, die Tabs kollabieren nicht und bleiben aktiv!
                                 st.selectbox(
                                     "Status direkt ändern:",
                                     options=status_optionen,
                                     index=status_optionen.index(tk['status']),
-                                    key=auswahl_key,
-                                    on_change=sichere_ticket_status_direkt,
-                                    args=(tk['id'], auswahl_key)
+                                    key=auswahl_key
                                 )
 
 
@@ -1157,7 +1156,7 @@ else:
         st.markdown(
             '<div class="disclaimer">'
             '<span class="icon" style="color:#f59e0b; font-size:28px;">warning</span>'
-            '<div>Architektonischer Vorbehalt: Diese Funktion illustriert die geplante Endnutzer-Integration. '
+            '<div>Architektonischer Vorbehalt: Diese Funktion theoretisiert die geplante Endnutzer-Integration. '
             'Eine operative Bereitstellung erfolgt nach erfolgreicher Konfiguration der internen API-Gateways.</div>'
             '</div>',
             unsafe_allow_html=True,
